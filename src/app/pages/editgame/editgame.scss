@@ -1,0 +1,194 @@
+:host {
+  display: block;
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+$primary-bg: #1a1a1a;
+$card-bg: #ffffff;
+$input-bg: #f0f0f0;
+$text-color: #333;
+$border-color: #e0e0e0;
+$edit-btn-bg: #90ee90; // Light Green
+$delete-btn-bg: #f08080; // Light Coral/Red
+
+/* ใช้ Tailwind CSS หรือ SCSS ทั่วไปสำหรับการจัดวาง */
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f4f7f9;
+    min-height: 100vh;
+}
+
+.edit-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.image-upload-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #ccc;
+}
+
+.game-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+    color: #666;
+
+    .mat-icon {
+        font-size: 60px;
+        width: 60px;
+        height: 60px;
+        margin-bottom: 10px;
+    }
+}
+
+.add-image-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background-color: #007bff; /* Primary color */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+    line-height: 45px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+}
+
+/* --- Form Styles --- */
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    width: 100%;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    
+    .form-group {
+        flex: 1; /* ทำให้แต่ละ group กินพื้นที่เท่ากันในแถว */
+    }
+}
+
+/* Material Form Field Overrides */
+.mat-mdc-form-field {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+/* Textarea height */
+textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* --- Action Buttons --- */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-edit, .btn-delete {
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+/* --- Loading and Error States --- */
+.loading-state, .error-state {
+    text-align: center;
+    padding: 40px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    .mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: #3f51b5; /* Primary color */
+        margin-bottom: 10px;
+    }
+}
+
+.error-state .mat-icon {
+    color: #f44336; /* Warn color */
+}
+
+.status-message {
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 15px;
+    text-align: center;
+    font-weight: 500;
+    
+    &.error {
+        background-color: #ffebee;
+        color: #d32f2f;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .edit-card {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        
+        .btn {
+            width: 100%;
+        }
+    }
+}

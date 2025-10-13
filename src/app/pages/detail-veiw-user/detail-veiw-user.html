@@ -1,0 +1,109 @@
+<div class="detail-view-container">
+  <div class="header">
+    <h1 class="page-title">User Details</h1>
+    <button mat-stroked-button (click)="goBackToUserList()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to User List
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="status-message">Loading user details...</div>
+  }
+
+  <!-- Error State -->
+  @if (!isLoading() && error()) {
+    <div class="status-message error">{{ error() }}</div>
+  }
+
+  <!-- Content State -->
+  @if (userDetails(); as details) {
+    <div class="content-layout">
+      <!-- Left Column: User Info -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          @if (details.user.image) {
+            <img mat-card-avatar [src]="details.user.image" class="profile-avatar">
+          } @else {
+            <mat-icon mat-card-avatar class="profile-icon">account_circle</mat-icon>
+          }
+          <mat-card-title>{{ details.user.name }}</mat-card-title>
+          <mat-card-subtitle>{{ details.user.type === 1 ? 'Administrator' : 'Regular User' }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="info-content">
+          <div class="info-item">
+            <mat-icon>badge</mat-icon>
+            <span><strong>ID:</strong> {{ details.user.id }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>email</mat-icon>
+            <span><strong>Email:</strong> {{ details.user.email }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>account_balance_wallet</mat-icon>
+            <span><strong>Wallet:</strong> {{ details.user.wallet | currency:'THB' }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Right Column: History Tabs -->
+      <mat-card class="history-card">
+        <mat-tab-group animationDuration="0ms">
+          <!-- Tab 1: Purchase History -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">shopping_bag</mat-icon>
+              Purchase History ({{ details.purchaseHistory.length }})
+            </ng-template>
+            <div class="tab-content-wrapper">
+              @for (item of details.purchaseHistory; track $index) {
+                <div class="history-item purchase-item">
+                  <div class="item-image">
+                    @if (item.ImageUrl) {
+                      <img [src]="item.ImageUrl" [alt]="item.Title">
+                    } @else {
+                      <mat-icon>videogame_asset</mat-icon>
+                    }
+                  </div>
+                  <div class="item-details">
+                    <span class="item-title">{{ item.Title }}</span>
+                    <span class="item-date">{{ item.purchase_date | date: 'd MMM y, HH:mm' }}</span>
+                  </div>
+                  <div class="item-amount expense">
+                    -{{ item.purchase_price | currency:'THB' }}
+                  </div>
+                </div>
+              } @empty {
+                <p class="empty-state">No game purchases found.</p>
+              }
+            </div>
+          </mat-tab>
+
+          <!-- Tab 2: Top-up History -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">add_card</mat-icon>
+              Top-up History ({{ details.topupHistory.length }})
+            </ng-template>
+            <div class="tab-content-wrapper">
+              @for (item of details.topupHistory; track $index) {
+                <div class="history-item topup-item">
+                  <div class="item-details">
+                    <span class="item-title">Top-up via {{ item.payment_method }}</span>
+                    <span class="item-date">{{ item.transaction_date | date: 'd MMM y, HH:mm' }}</span>
+                  </div>
+                  <div class="item-amount income">
+                    +{{ item.amount | currency:'THB' }}
+                  </div>
+                </div>
+              } @empty {
+                <p class="empty-state">No top-up history found.</p>
+              }
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-card>
+    </div>
+  }
+</div>

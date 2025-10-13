@@ -1,0 +1,130 @@
+<main class="main-content">
+  @if (isLoading()) {
+    <div class="wallet-card loading"><p>Loading Wallet...</p></div>
+  }
+  @if (!isLoading() && error()) {
+    <div class="wallet-card error-state">
+      <h3>Oops! Something went wrong.</h3>
+      <p>{{ error() }}</p>
+      <button class="btn btn-outline" (click)="goHome()">Go Home</button>
+    </div>
+  }
+
+  @if (currentUser(); as user) {
+    <div class="wallet-card">
+      <div class="profile-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <h2 class="wallet-owner">{{ user.name }}'s Wallet</h2>
+      <div class="balance-section">
+        <p class="balance-label">Current Wallet balance</p>
+        <p class="balance-amount">
+          <span class="currency-symbol">฿</span>{{ user.wallet | currency:'THB':'symbol':'1.2-2' }}
+        </p>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-outline" (click)="showAddFundsModal()">Add funds</button>
+        <button class="btn btn-outline" (click)="goHome()">Home</button>
+      </div>
+
+      <section class="history-section">
+        <div class="history-tabs">
+          <button class="tab-button" 
+                  [class.active]="activeHistoryTab() === 'topup'" 
+                  (click)="selectHistoryTab('topup')">
+            <mat-icon>receipt_long</mat-icon>
+            <span>เติมเงิน</span>
+          </button>
+          <button class="tab-button" 
+                  [class.active]="activeHistoryTab() === 'purchase'" 
+                  (click)="selectHistoryTab('purchase')">
+            <mat-icon>sports_esports</mat-icon>
+            <span>ซื้อเกม</span>
+          </button>
+        </div>
+
+        <div class="history-content">
+          @if (activeHistoryTab() === 'topup') {
+            @if (isHistoryLoading()) {
+              <div class="loading-state"><p>กำลังโหลดประวัติ...</p></div>
+            } @else {
+              @if (topupHistory().length > 0) {
+                <ul class="history-list">
+                  @for (item of topupHistory(); track item.id) {
+                    <li class="history-item">
+                      <div class="item-details">
+                        <span class="item-method">เติมเงินผ่าน {{ item.payment_method }}</span>
+                        <span class="item-date">{{ item.transaction_date | date: 'd MMM y, HH:mm' }}</span>
+                      </div>
+                      <div class="item-amount topup">
+                        +{{ item.amount | currency:'THB':'symbol':'1.2-2' }}
+                      </div>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <div class="empty-state"><p>ยังไม่มีประวัติการเติมเงิน</p></div>
+              }
+            }
+          }
+
+          @if (activeHistoryTab() === 'purchase') {
+            @if (isPurchaseHistoryLoading()) {
+              <div class="loading-state"><p>กำลังโหลดประวัติการซื้อ...</p></div>
+            } @else {
+              @if (purchaseHistory().length > 0) {
+                <ul class="history-list">
+                  @for (item of purchaseHistory(); track $index) {
+                    <li class="history-item">
+                      <div class="item-details">
+                        <span class="item-title">{{ item.Title }}</span>
+                        <span class="item-date">{{ item.purchase_date | date: 'd MMM y, HH:mm' }}</span>
+                      </div>
+                      <div class="item-amount purchase">
+                        -{{ item.purchase_price | currency:'THB':'symbol':'1.2-2' }}
+                      </div>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <div class="empty-state"><p>ยังไม่มีประวัติการซื้อเกม</p></div>
+              }
+            }
+          }
+        </div>
+      </section>
+    </div>
+  }
+</main>
+
+@if (isAddFundsModalVisible()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">เติมเงินเข้า Wallet</h3>
+        <button class="close-button" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="amount">จำนวนเงิน (บาท)</label>
+          <input id="amount" class="amount-input" type="number" placeholder="เช่น 500" [ngModel]="addFundsAmount()"
+            (ngModelChange)="addFundsAmount.set($event)" min="1" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeModal()">ยกเลิก</button>
+        <button class="btn btn-primary" (click)="confirmAddFunds()" [disabled]="isUpdatingBalance() || !addFundsAmount() || addFundsAmount()! <= 0">
+          @if (isUpdatingBalance()) {
+            <span>กำลังดำเนินการ...</span>
+          } @else {
+            <span>ยืนยันการเติมเงิน</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

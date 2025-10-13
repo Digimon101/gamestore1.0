@@ -1,0 +1,122 @@
+<header class="app-header">
+  <nav class="nav-links">
+    <a [routerLink]="['/main']" class="logo">GameStoreHome</a>
+    <a [routerLink]="['/main']">Games</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </nav>
+  <div class="header-tools">
+    @if (isAdmin()) {
+    <a (click)="onViewUsers()" class="icon-link" title="View Users">
+      <mat-icon>group</mat-icon>
+    </a>
+    }
+
+    <!-- Genre Filter Button -->
+    <div class="genre-filter-container">
+      <button class="icon-link genre-btn" (click)="toggleGenreFilter()" title="Filter by Genre">
+        <mat-icon>filter_list</mat-icon>
+        @if (selectedGenres().length > 0) {
+        <span class="genre-badge">{{ selectedGenres().length }}</span>
+        }
+      </button>
+
+      <!-- Genre Filter Dropdown -->
+      @if (isGenreFilterOpen()) {
+      <div class="genre-dropdown" (blur)="closeGenreDropdown()">
+        <div class="genre-dropdown-header">
+          <h3>Filter by Genre</h3>
+          <button class="clear-btn" (click)="clearGenreFilter()" *ngIf="selectedGenres().length > 0">
+            Clear All
+          </button>
+        </div>
+
+        <div class="genre-list">
+          @for (genre of genres(); track genre.GenreID) {
+          <label class="genre-item">
+            <mat-checkbox [checked]="isGenreSelected(genre.GenreID)" (change)="toggleGenre(genre.GenreID)">
+              {{ genre.GenreName }}
+            </mat-checkbox>
+          </label>
+          }
+          @empty {
+          <div class="no-genres">No genres available</div>
+          }
+        </div>
+
+        <div class="genre-dropdown-footer">
+          <button class="apply-btn" (click)="applyGenreFilter()">
+            Apply Filter
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-box" (focusin)="isSearchFocused.set(true)">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input type="text" placeholder="Search games..." [formControl]="searchControl" (blur)="onSearchBlur()"
+        (focus)="isSearchFocused.set(true)" (keydown.enter)="onEnterSearch($event)" />
+
+      <span class="clear-search" (click)="clearSearch()" *ngIf="searchControl.value">
+        <mat-icon>close</mat-icon>
+      </span>
+
+      @if (isSearchFocused() && searchControl.value) {
+      <div class="search-dropdown">
+        @if (searchStatus() === 'loading') {
+        <div class="search-status-item loading">
+          <mat-icon class="loading-spinner">autorenew</mat-icon>
+          <span>Searching...</span>
+        </div>
+        }
+        @else if (searchStatus() === 'error') {
+        <div class="search-status-item error">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() || 'Failed to search' }}</span>
+        </div>
+        }
+        @else if (searchResults().length > 0) {
+        <div class="search-results-header">
+          <span class="results-count">{{ searchResults().length }} results</span>
+        </div>
+@for (game of searchResults(); track game.GameID) {
+    <a class="result-item" 
+       [routerLink]="['/detail', game.GameID]" 
+       (click)="onResultClick()"> <div class="game-thumbnail-wrapper"> 
+            <img [src]="game.ImageUrl || 'https://placehold.co/80x80/1b2838/FFF?text=No+Image'" [alt]="game.Title"
+                class="game-thumbnail">
+        </div>
+        
+        <div class="game-info">
+            <span class="game-title">{{ game.Title }}</span>
+            <div class="game-meta">
+                <span class="game-price">{{ game.Price | currency: 'USD' }}</span>
+            </div>
+        </div>
+    </a>
+}
+        }
+        @else if (searchStatus() === 'done' && searchResults().length === 0) {
+        <div class="search-status-item no-results">
+          <mat-icon>search_off</mat-icon>
+          <span>No results for "{{ searchControl.value }}"</span>
+        </div>
+        }
+      </div>
+      }
+    </div>
+
+    <a href="#" class="icon-link">
+      <mat-icon>shopping_cart</mat-icon>
+    </a>
+
+    <a [routerLink]="['/wallet']" class="icon-link">
+      <mat-icon>account_balance_wallet</mat-icon>
+    </a>
+    <a (click)="onProfile()" class="icon-link">
+      <mat-icon>person</mat-icon>
+    </a>
+  </div>
+</header>

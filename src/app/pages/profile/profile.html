@@ -1,0 +1,93 @@
+<main class="profile-container">
+    @if (user; as nonNullUser) {
+    <div class="profile-layout">
+
+        <div class="profile-info-column">
+            <div class="avatar-section">
+                <div class="avatar-wrapper">
+                    @if (nonNullUser.image) {
+                    <img [src]="'https://sqlserverwebgame-main.onrender.com' + nonNullUser.image.replace('/uploads/profile', '/profile')"
+                        class="profile-avatar" alt="Profile Image" />
+                    <mat-icon class="default-avatar-icon">person</mat-icon>
+                    }
+                </div>
+                <h2 class="display-name">{{ nonNullUser.name }}</h2>
+            </div>
+
+            <div class="details-group">
+                <div class="contact-detail">
+                    <mat-icon class="detail-icon">email</mat-icon>
+                    <p>{{ nonNullUser.email }}</p>
+                </div>
+                <div class="contact-detail">
+                    <mat-icon class="detail-icon">badge</mat-icon>
+                    <p>{{ nonNullUser.type === 0 ? 'Regular User' : 'Administrator' }}</p>
+                </div>
+                <div class="contact-detail">
+                    <mat-icon class="detail-icon">info</mat-icon>
+                    <p>User ID: {{ nonNullUser.id }}</p>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button (click)="onEdit()" mat-stroked-button class="edit-btn">
+                    <mat-icon>edit</mat-icon>
+                    Edit Profile
+                </button>
+                <button (click)="onSignOut()" mat-stroked-button color="warn" class="signout-btn">
+                    <mat-icon>logout</mat-icon>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+
+        <div class="my-library-column">
+            <h2 class="library-title">
+                <mat-icon class="library-icon">library_books</mat-icon>
+                My Library
+            </h2>
+
+            <div class="game-item-list">
+                @if (isLoadingLibrary()) {
+                <div class="library-status">
+                    <p>Loading your games...</p>
+                </div>
+                } @else if (libraryError()) {
+                <div class="library-status error">
+                    <mat-icon>error_outline</mat-icon>
+                    <p>{{ libraryError() }}</p>
+                </div>
+                } @else {
+                @for (game of userGames(); track game.GameID) {
+                <div class="game-item">
+                    <div class="game-image-wrapper">
+                        @if (game.ImageUrl) {
+                        <img [src]="game.ImageUrl" [alt]="game.Title">
+                        } @else {
+                        <mat-icon class="game-placeholder-icon">videogame_asset</mat-icon>
+                        }
+                    </div>
+                    <div class="game-details">
+                        <p class="game-title">{{ game.Title }}</p>
+                    </div>
+                    <button mat-flat-button color="primary" class="download-button" (click)="onDownload(game)">
+                        <mat-icon>download</mat-icon>
+                        <span>Download</span>
+                    </button>
+                </div>
+                } @empty {
+                <div class="library-status empty">
+                    <mat-icon class="empty-icon">videogame_asset_off</mat-icon>
+                    <p>No games in your library yet</p>
+                </div>
+                }
+                }
+            </div>
+        </div>
+    </div>
+    } @else {
+    <div class="profile-layout loading-state">
+        <p>Loading profile information...</p>
+    </div>
+    }
+</main>

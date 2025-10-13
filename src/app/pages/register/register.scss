@@ -1,0 +1,57 @@
+// src/app/pages/register/register.scss
+
+.register-page {
+  /* จัดให้อยู่กึ่งกลางหน้าจอ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; 
+  background-color: #f5f5f5; 
+
+  .register-card {
+    width: 100%;
+    max-width: 400px; /* จำกัดความกว้างเท่ากับหน้า Login */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    
+    .register-title {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 24px;
+      font-weight: 500;
+    }
+  }
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 12px; /* ลดระยะห่างเล็กน้อยเพราะมีฟิลด์เยอะขึ้น */
+  }
+
+  .register-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    button {
+      padding: 0 24px;
+      height: 40px;
+      border-radius: 4px;
+    }
+  }
+
+  /* สไตล์สำหรับลิงก์ Login */
+  .login-link {
+    text-align: center;
+    margin-top: 15px; 
+    font-size: 14px;
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

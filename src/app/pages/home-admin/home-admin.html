@@ -1,0 +1,88 @@
+<div class="admin-home-container">
+  <header class="page-header">
+    <h1>Game Management</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" class="add-game-button" (click)="onAddGame()">
+        <mat-icon>add_circle_outline</mat-icon>
+        Add New Game
+      </button>
+    </div>
+  </header>
+
+  <section class="game-section top-seller">
+    <div class="section-header">
+        <h2 class="section-title">Top Sellers</h2>
+        <a href="#" class="view-all-link">View All</a>
+    </div>
+    <div class="carousel-wrapper">
+      <div class="carousel-container">
+        <button mat-icon-button class="nav-button nav-left" (click)="scrollLeft()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="game-grid" #topSellerScroll (scroll)="onScroll()">
+          @for (game of topSellerGames(); track game.GameID) {
+            <div class="game-card">
+              <div class="card-image">
+                @if (game.ImageUrl) {
+                  <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
+                } @else {
+                  <div class="placeholder-image"><mat-icon>photo_camera</mat-icon></div>
+                }
+              </div>
+              <div class="card-content">
+                <h3 class="game-title">{{ game.Title }}</h3>
+                <p class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</p>
+              </div>
+              <div class="card-footer">
+                <button mat-stroked-button color="primary" class="edit-button" (click)="onEditGame(game.GameID)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state"><mat-icon>hourglass_empty</mat-icon><p>Loading games...</p></div>
+          }
+        </div>
+        <button mat-icon-button class="nav-button nav-right" (click)="scrollRight()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <div class="carousel-dots">
+        @for (dot of carouselDots(); track $index) {
+          <button class="dot" [class.active]="$index === currentDotIndex()" (click)="scrollToPage($index)"></button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="game-section popular">
+     <div class="section-header">
+        <h2 class="section-title">All Games</h2>
+        <a href="#" class="view-all-link">View All</a>
+    </div>
+    <div class="game-grid">
+      @for (game of popularGames(); track game.GameID) {
+        <div class="game-card">
+           <div class="card-image">
+                @if (game.ImageUrl) {
+                  <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
+                } @else {
+                  <div class="placeholder-image"><mat-icon>photo_camera</mat-icon></div>
+                }
+              </div>
+              <div class="card-content">
+                <h3 class="game-title">{{ game.Title }}</h3>
+                <p class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</p>
+              </div>
+              <div class="card-footer">
+                <button mat-stroked-button color="primary" class="edit-button" (click)="onEditGame(game.GameID)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+              </div>
+        </div>
+      } @empty {
+        <div class="empty-state"><mat-icon>hourglass_empty</mat-icon><p>Loading games...</p></div>
+      }
+    </div>
+  </section>
+</div>

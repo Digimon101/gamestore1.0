@@ -1,0 +1,101 @@
+// --- Global Styles & Variables ---
+:host {
+  display: block;
+  background-color: #f8f9fa; // A very light grey background
+  min-height: 100vh;
+}
+
+$card-bg: #ffffff;
+$text-color: #212529;
+$border-color: #495057; // A darker grey for outlines and table lines
+$navbar-border: #dee2e6; // Lighter border for navbar
+
+// --- Main Content Styles ---
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 2rem;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+  color: $text-color;
+}
+
+// --- History Container & Table Styles ---
+.history-container {
+  width: 100%;
+  max-width: 800px;
+  background-color: $card-bg;
+  border: 2px solid $text-color;
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse; // Removes space between table cells
+
+  th,
+  td {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+  }
+
+  thead {
+    th {
+      font-weight: 600;
+      border-bottom: 2px solid $text-color;
+      padding-bottom: 1rem;
+    }
+  }
+
+  tbody {
+    td {
+      color: $text-color;
+      // Add a light border for rows if desired
+      // border-bottom: 1px solid $navbar-border;
+    }
+
+    // Remove border from the last row if you use it
+    // tr:last-child td {
+    //   border-bottom: none;
+    // }
+  }
+
+  // Right-align the 'Total' column
+  th:last-child,
+  td:last-child {
+    text-align: right;
+  }
+}
+
+// --- Action Button Styles ---
+.action-buttons {
+  margin-top: 2rem;
+
+  .btn {
+    padding: 0.6rem 2.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-outline {
+    background-color: transparent;
+    border: 1px solid $text-color;
+    color: $text-color;
+
+    &:hover {
+      background-color: $text-color;
+      color: $card-bg;
+    }
+  }
+}

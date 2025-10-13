@@ -1,0 +1,382 @@
+:host {
+  display: block;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+// --- Theme Variables ---
+$card-bg: #ffffff;
+$text-color: #212529;
+$border-color: #dee2e6; // Lighter grey for inner borders
+$outline-color: #212529; // Darker grey for main outline
+$primary-hover-bg: #343a40;
+
+// --- Main Content Styles ---
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; // Changed to align to the top
+  padding: 4rem 2rem;
+  min-height: calc(100vh - 70px);
+}
+
+// --- Combined Wallet Card Styles ---
+.wallet-card {
+  width: 100%;
+  max-width: 700px; // Increased width for history
+  background-color: $card-bg;
+  border: 2px solid $outline-color;
+  border-radius: 16px;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  &.loading, &.error-state {
+    max-width: 400px; // Keep smaller width for simple states
+    min-height: 300px;
+    justify-content: center;
+    h3 { margin-bottom: 1rem; }
+  }
+}
+
+.profile-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid $outline-color;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  svg {
+    width: 40px;
+    height: 40px;
+    color: $outline-color;
+  }
+}
+
+.wallet-owner {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: $text-color;
+  margin: 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $border-color;
+  width: 100%;
+}
+
+.balance-section {
+  margin: 2.5rem 0;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid $border-color;
+  width: 100%;
+
+  .balance-label {
+    font-size: 1rem;
+    color: $text-color;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .balance-amount {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: $text-color;
+    margin: 0;
+    line-height: 1.1;
+
+    .currency-symbol {
+      font-weight: normal;
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+
+  .btn {
+    flex: 1;
+    max-width: 200px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-outline {
+    background-color: transparent;
+    border: 1px solid $outline-color;
+    color: $outline-color;
+
+    &:hover {
+      background-color: $outline-color;
+      color: $card-bg;
+    }
+  }
+}
+
+/* --- [MODIFIED] History Section Styles (as part of the card) --- */
+// --- Theme Variables ---
+$card-bg: #ffffff;
+$text-color: #212529;
+$border-color: #dee2e6;
+$outline-color: #212529;
+$primary-hover-bg: #343a40;
+$light-gray-bg: #f1f3f5;
+$success-color: #28a745; // Green for top-up
+$danger-color: #dc3545;  // Red for purchase
+
+// --- Main Content & Wallet Card Styles (Mostly unchanged) ---
+// ... (keep your existing styles for .main-content, .wallet-card, .profile-icon, etc.)
+
+/* --- [MODIFIED] History Section --- */
+.history-section {
+  width: 100%;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid $border-color;
+  text-align: left;
+}
+
+/* --- [NEW] Modern Tab Styles --- */
+.history-tabs {
+  display: flex;
+  background-color: $light-gray-bg;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 1.5rem;
+
+  .tab-button {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    border: none;
+    background-color: transparent;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.25s ease-out;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    mat-icon {
+      font-size: 1.25rem;
+      height: 1.25rem;
+      width: 1.25rem;
+    }
+    
+    &.active {
+      background-color: $card-bg;
+      color: $text-color;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+.history-content {
+  /* This div is just a container, no specific style needed */
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 350px;
+  overflow-y: auto;
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: 3px;
+  }
+}
+
+/* --- [MODIFIED] Unified History Item Style --- */
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: left;
+  }
+
+  // Specific styles for title, method, date
+  .item-title, .item-method {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: $text-color;
+  }
+  
+  .item-date {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+
+  .item-amount {
+    font-size: 1.1rem;
+    font-weight: bold;
+    white-space: nowrap; // Prevent wrapping
+    
+    // Color coding for amounts
+    &.topup {
+      color: $success-color;
+    }
+    &.purchase {
+      color: $danger-color;
+    }
+  }
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
+}
+
+
+/* --- [IMPROVED] Add Funds Modal Styles --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  background-color: $card-bg;
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  border: 2px solid $outline-color;
+  width: 90%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .modal-title {
+    font-size: 1.5rem;
+    color: $text-color;
+    margin: 0;
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+    &:hover { color: $text-color; }
+  }
+}
+
+.modal-body {
+  padding: 1rem 0;
+}
+
+.form-group {
+  text-align: left;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .amount-input {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    border: 1px solid $border-color;
+    background-color: #f8f9fa;
+    color: $text-color;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $outline-color;
+      box-shadow: 0 0 0 3px rgba(33, 37, 41, 0.2);
+    }
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  
+  .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary {
+    background-color: $outline-color;
+    color: $card-bg;
+    border: 1px solid $outline-color;
+    
+    &:hover:not(:disabled) {
+      background-color: $primary-hover-bg;
+      border-color: $primary-hover-bg;
+    }
+    &:disabled {
+      background-color: #adb5bd;
+      border-color: #adb5bd;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    border: 1px solid $border-color;
+    color: $text-color;
+
+    &:hover {
+      background-color: #e9ecef;
+    }
+  }
+}

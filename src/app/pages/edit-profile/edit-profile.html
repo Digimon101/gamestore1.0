@@ -1,0 +1,113 @@
+<div class="profile-container">
+  <!-- Profile Overview Card -->
+  <mat-card class="profile-card profile-overview">
+    <div class="profile-header">
+      <!-- Profile Image Preview -->
+      <div class="avatar-wrapper">
+        <img *ngIf="displayedImage; else defaultAvatar" [src]="displayedImage" class="profile-avatar" />
+        <ng-template #defaultAvatar>
+          <mat-icon class="profile-icon">account_circle</mat-icon>
+        </ng-template>
+      </div>
+      <h2 class="user-name">{{ user?.name || 'Guest User' }}</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="profile-detail">
+      <mat-icon class="detail-icon">email</mat-icon>
+      <p class="detail-text">{{ user?.email || 'No email' }}</p>
+    </div>
+
+    <div class="profile-detail">
+      <mat-icon class="detail-icon">badge</mat-icon>
+      <p class="detail-text">{{ user?.type === 0 ? 'Regular User' : 'Administrator' }}</p>
+    </div>
+
+    <div class="profile-detail">
+      <mat-icon class="detail-icon">info</mat-icon>
+      <p class="detail-text">User ID: {{ user?.id || 'N/A' }}</p>
+    </div>
+
+    <div class="profile-actions">
+      <button (click)="onSaveProfile()" mat-raised-button class="save-button" [disabled]="profileForm.invalid">
+        <mat-icon>save</mat-icon>
+        Save Changes
+      </button>
+      <button (click)="onCancel()" mat-stroked-button class="cancel-button">
+        <mat-icon>close</mat-icon>
+        Cancel
+      </button>
+      <button (click)="onDeleteAccount()" mat-stroked-button class="delete-button">
+        <mat-icon>delete_forever</mat-icon>
+        Delete Account
+      </button>
+    </div>
+  </mat-card>
+
+  <!-- Billing Information Card -->
+  <mat-card class="profile-card billing-info">
+    <h2 class="billing-title">
+      <mat-icon class="title-icon">edit</mat-icon>
+      Edit Profile Information
+    </h2>
+
+    <form [formGroup]="profileForm" class="billing-form">
+      <!-- Profile Image Upload -->
+      <div class="image-upload-section">
+        <label class="upload-label">Profile Picture</label>
+        <div class="image-preview-container">
+          <div class="image-preview">
+            <img *ngIf="previewUrl" [src]="previewUrl" alt="Profile Preview" />
+            <mat-icon *ngIf="!previewUrl" class="placeholder-icon">account_circle</mat-icon>
+          </div>
+          <div class="upload-actions">
+            <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" style="display: none" />
+            <button type="button" mat-raised-button class="upload-button" (click)="fileInput.click()">
+              <mat-icon>upload</mat-icon>
+              Choose Image
+            </button>
+            <button *ngIf="previewUrl" type="button" mat-stroked-button class="remove-button" (click)="removeImage()">
+              <mat-icon>delete</mat-icon>
+              Remove
+            </button>
+            <p class="upload-hint">Max size: 5MB (JPG, PNG, GIF)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- Name -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Full Name</mat-label>
+        <input matInput formControlName="name" placeholder="Enter your full name" />
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-error *ngIf="profileForm.get('name')?.hasError('required')">
+          Name is required
+        </mat-error>
+        <mat-error *ngIf="profileForm.get('name')?.hasError('minlength')">
+          Name must be at least 2 characters
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Email -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="Enter email" />
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
+          Email is required
+        </mat-error>
+        <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
+          Please enter a valid email
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Form Status Indicator -->
+      <div class="form-status" *ngIf="profileForm.invalid && (profileForm.dirty || profileForm.touched)">
+        <mat-icon class="warning-icon">warning</mat-icon>
+        <p>Please complete all required fields correctly</p>
+      </div>
+    </form>
+  </mat-card>
+</div>

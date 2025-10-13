@@ -1,0 +1,557 @@
+.app-header {
+  background: #ffffff;
+  padding: 12px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid #e5e5e5;
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+
+    a {
+      color: #555555;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &:hover {
+        color: #1976d2;
+      }
+
+      &.logo {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1976d2;
+        background: linear-gradient(90deg, #1976d2 0%, #2196f3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+  }
+
+  .header-tools {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+
+    // =============================================
+    // GENRE FILTER CONTAINER
+    // =============================================
+    .genre-filter-container {
+      position: relative;
+
+      .genre-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #555555;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 8px;
+        border-radius: 8px;
+        background: transparent;
+        border: none;
+
+        &:hover {
+          color: #1976d2;
+          background: #f5f5f5;
+        }
+
+        mat-icon {
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
+        }
+
+        .genre-badge {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          background: #1976d2;
+          color: #ffffff;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 2px 6px;
+          border-radius: 10px;
+          min-width: 16px;
+          height: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+        }
+      }
+
+      // Genre Dropdown
+      .genre-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 320px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        z-index: 1001;
+        overflow: hidden;
+        animation: dropdownSlide 0.2s ease;
+
+        .genre-dropdown-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 20px;
+          background: #f8f8f8;
+          border-bottom: 1px solid #e5e5e5;
+
+          h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #333333;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .clear-btn {
+            background: none;
+            border: none;
+            color: #1976d2;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            &:hover {
+              background: rgba(25, 118, 210, 0.1);
+              color: #1565c0;
+            }
+          }
+        }
+
+        .genre-list {
+          max-height: 400px;
+          overflow-y: auto;
+          padding: 8px;
+
+          &::-webkit-scrollbar {
+            width: 8px;
+          }
+
+          &::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-radius: 4px;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: #d0d0d0;
+            border-radius: 4px;
+
+            &:hover {
+              background: #b0b0b0;
+            }
+          }
+
+          .genre-item {
+            display: block;
+            padding: 10px 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+
+            &:hover {
+              background: #f8f9fa;
+            }
+
+            ::ng-deep .mat-mdc-checkbox {
+              width: 100%;
+
+              .mdc-form-field {
+                width: 100%;
+              }
+
+              .mdc-checkbox__background {
+                border-color: #d0d0d0;
+                border-width: 2px;
+              }
+
+              &.mat-mdc-checkbox-checked .mdc-checkbox__background {
+                background-color: #1976d2;
+                border-color: #1976d2;
+              }
+
+              label {
+                color: #333333;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                width: 100%;
+              }
+            }
+          }
+
+          .no-genres {
+            padding: 32px 20px;
+            text-align: center;
+            color: #9e9e9e;
+            font-size: 14px;
+            font-style: italic;
+          }
+        }
+
+        .genre-dropdown-footer {
+          padding: 16px 20px;
+          background: #f8f8f8;
+          border-top: 1px solid #e5e5e5;
+
+          .apply-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1976d2;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+
+            &:hover {
+              background: #1565c0;
+              box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+        }
+      }
+    }
+
+    // =============================================
+    // MODERN LIGHT SEARCH BOX
+    // =============================================
+    .search-box {
+      position: relative;
+      width: 320px;
+
+      .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9e9e9e;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      input {
+        width: 100%;
+        padding: 11px 40px 11px 44px;
+        background: #f8f8f8;
+        border: 1px solid #e0e0e0;
+        border-radius: 24px;
+        color: #333333;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        outline: none;
+
+        &::placeholder {
+          color: #9e9e9e;
+        }
+
+        &:focus {
+          background: #ffffff;
+          border-color: #1976d2;
+          box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+
+          ~ .search-icon {
+            color: #1976d2;
+          }
+        }
+      }
+
+      .clear-search {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #9e9e9e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        z-index: 1;
+        padding: 4px;
+        border-radius: 50%;
+
+        &:hover {
+          color: #333333;
+          background: #f0f0f0;
+        }
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      // Search Dropdown
+      .search-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        max-height: 500px;
+        overflow-y: auto;
+        z-index: 1000;
+        animation: dropdownSlide 0.2s ease;
+
+        &::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: #f5f5f5;
+          border-radius: 0 12px 12px 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #d0d0d0;
+          border-radius: 4px;
+
+          &:hover {
+            background: #b0b0b0;
+          }
+        }
+
+        .search-results-header {
+          padding: 12px 16px;
+          background: #f8f8f8;
+          border-bottom: 1px solid #e5e5e5;
+          border-radius: 12px 12px 0 0;
+
+          .results-count {
+            color: #1976d2;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+        }
+
+        .result-item {
+          display: flex;
+          gap: 12px;
+          padding: 12px 16px;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.2s ease;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+            border-radius: 0 0 12px 12px;
+          }
+
+          &:hover {
+            background: #f8f9fa;
+            
+            .game-thumbnail-wrapper {
+              transform: scale(1.05);
+              box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+            }
+
+            .game-title {
+              color: #1976d2;
+            }
+          }
+
+          .game-thumbnail-wrapper {
+            flex-shrink: 0;
+            width: 80px;
+            height: 40px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #f0f0f0;
+            transition: all 0.2s ease;
+            border: 1px solid #e5e5e5;
+          }
+
+          .game-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .game-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            min-width: 0;
+          }
+
+          .game-title {
+            color: #333333;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.2s ease;
+          }
+
+          .game-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .game-price {
+            color: #2e7d32;
+            font-size: 13px;
+            font-weight: 700;
+            background: #e8f5e9;
+            padding: 2px 8px;
+            border-radius: 4px;
+          }
+        }
+
+        .search-status-item {
+          padding: 24px 16px;
+          text-align: center;
+          color: #757575;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          font-size: 14px;
+
+          mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+          }
+
+          &.loading {
+            color: #1976d2;
+
+            .loading-spinner {
+              animation: spin 1s linear infinite;
+            }
+          }
+
+          &.error {
+            color: #d32f2f;
+          }
+
+          &.no-results {
+            color: #757575;
+          }
+        }
+      }
+    }
+
+    .icon-link {
+      color: #555555;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 8px;
+      border-radius: 8px;
+
+      &:hover {
+        color: #1976d2;
+        background: #f5f5f5;
+      }
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+}
+
+// =============================================
+// ANIMATIONS
+// =============================================
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// =============================================
+// RESPONSIVE
+// =============================================
+@media (max-width: 768px) {
+  .app-header {
+    padding: 12px 20px;
+
+    .nav-links {
+      gap: 12px;
+
+      a {
+        font-size: 12px;
+      }
+    }
+
+    .header-tools {
+      .search-box {
+        width: 240px;
+      }
+
+      .genre-filter-container .genre-dropdown {
+        width: 280px;
+      }
+    }
+  }
+}

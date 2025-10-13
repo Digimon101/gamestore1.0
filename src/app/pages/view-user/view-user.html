@@ -1,0 +1,70 @@
+<div class="view-user-container">
+    <h1 class="page-title">Manage Users</h1>
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+    <div class="status-message">Loading users...</div>
+    }
+
+    <!-- Error State -->
+    @if (!isLoading() && error()) {
+    <div class="status-message error">{{ error() }}</div>
+    }
+
+    <!-- User List -->
+    @if (!isLoading() && !error()) {
+    <div class="user-card-list">
+        @for (user of users(); track user.id) {
+        <mat-card class="user-card">
+            <div class="user-info-main">
+                @if (user.image) {
+                <img [src]="user.image" alt="{{ user.name }}'s profile picture" class="profile-avatar">
+                } @else {
+                <mat-icon class="profile-icon">account_circle</mat-icon>
+                }
+                <div class="user-details">
+                    <p class="user-id">ID: {{ user.id }}</p>
+                    <p class="user-name">Name: {{ user.name }}</p>
+                    <p class="user-email">Email: {{ user.email }}</p>
+                </div>
+            </div>
+            <div class="user-actions">
+                <button mat-stroked-button class="action-button view-button"
+                    (click)="onViewProfile(user.id)">View</button>
+                <button mat-flat-button color="warn" class="action-button delete-button"
+                    (click)="onDeleteUser(user)">Delete Data</button>
+            </div>
+        </mat-card>
+        } @empty {
+        <div class="status-message">No other users found.</div>
+        }
+    </div>
+    }
+</div>
+
+
+<!-- Delete Confirmation Popup -->
+@if (deletePopup().isVisible) {
+<div class="popup-overlay" (click)="closeDeletePopup()">
+    <div class="popup-card" (click)="$event.stopPropagation()">
+        <div class="popup-header">
+            <h3>Confirm Deletion</h3>
+        </div>
+        <div class="popup-content">
+            <p>Are you sure you want to permanently delete the user <strong>{{ deletePopup().userToDelete?.name
+                    }}</strong> (ID: {{ deletePopup().userToDelete?.id }})?</p>
+            <p class="warning-text">This action cannot be undone.</p>
+        </div>
+        <div class="popup-actions">
+            <button mat-stroked-button (click)="closeDeletePopup()">Cancel</button>
+            <button mat-flat-button color="warn" (click)="confirmDelete()" [disabled]="deletePopup().isDeleting">
+                @if (deletePopup().isDeleting) {
+                <span>Deleting...</span>
+                } @else {
+                <span>Delete User</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+}

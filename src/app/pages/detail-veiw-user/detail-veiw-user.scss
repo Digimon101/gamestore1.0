@@ -1,0 +1,128 @@
+.detail-view-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+  }
+}
+
+.status-message {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #666;
+  &.error { color: #f44336; }
+}
+
+.content-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.info-card {
+  padding: 0 !important;
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+  }
+  .profile-icon {
+    font-size: 60px;
+    width: 60px;
+    height: 60px;
+    color: #999;
+  }
+  .info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem 1.5rem;
+  }
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #333;
+    mat-icon { color: #666; }
+  }
+}
+
+.history-card {
+  padding: 0 !important;
+  .tab-icon {
+    margin-right: 8px;
+  }
+}
+
+.tab-content-wrapper {
+  padding: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.purchase-item {
+  .item-image {
+    flex-shrink: 0;
+    width: 80px;
+    height: 45px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+.item-details {
+  flex-grow: 1;
+  .item-title {
+    font-weight: 500;
+  }
+  .item-date {
+    font-size: 0.85rem;
+    color: #777;
+  }
+}
+
+.item-amount {
+  font-weight: bold;
+  font-size: 1.1rem;
+  &.expense { color: #d9534f; }
+  &.income { color: #5cb85c; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
+}

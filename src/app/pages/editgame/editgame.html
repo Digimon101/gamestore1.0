@@ -1,0 +1,112 @@
+<main class="main-content">
+  <!-- Input file ที่ซ่อนอยู่: ต้องมี #fileInput และผูกกับ onFileSelected() -->
+  <input type="file" #fileInput hidden (change)="onFileSelected($event)" accept="image/*">
+
+  <!-- แสดง Loading State หรือ Error State -->
+  @if (!isGameLoaded()) {
+  <div class="loading-state">
+    <mat-icon>hourglass_empty</mat-icon>
+    <p>กำลังโหลดข้อมูลเกม...</p>
+  </div>
+  } @else if (gameId() === null) {
+  <div class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>ไม่พบ ID เกมสำหรับแก้ไข</p>
+    <button mat-raised-button color="warn" (click)="goHome()">กลับหน้าหลัก</button>
+  </div>
+  } @else {
+  <!-- แสดงฟอร์มเมื่อโหลดข้อมูลเสร็จแล้ว -->
+  <div class="edit-card">
+    <div class="image-upload-container">
+      <!-- แสดงรูปภาพเดิมหรือรูปภาพ Preview ใหม่ -->
+      @if (imagePreview()) {
+      <img [src]="imagePreview()" alt="Game Image" class="game-image" />
+      } @else {
+      <div class="image-placeholder">
+        <!-- SVG/Icon Placeholder -->
+        <mat-icon>image_not_supported</mat-icon>
+        <p>ไม่มีรูปภาพ</p>
+      </div>
+      }
+      <!-- ปุ่ม + สำหรับเรียก onAddImage() -->
+      <button type="button" class="add-image-btn" (click)="onAddImage()">+</button>
+    </div>
+
+    <!-- ฟอร์มแก้ไขเกม -->
+    <form class="edit-form" [formGroup]="gameForm">
+
+      <!-- ชื่อเกม -->
+      <mat-form-field class="form-group">
+        <mat-label>ชื่อเกม</mat-label>
+        <input matInput formControlName="Title" placeholder="เช่น Elden Ring">
+        @if (gameForm.get('Title')?.hasError('required') && gameForm.get('Title')?.touched) {
+        <mat-error>กรุณากรอกชื่อเกม</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="form-row">
+        <!-- ราคา -->
+        <mat-form-field class="form-group">
+          <mat-label>ราคา</mat-label>
+          <input matInput type="text" formControlName="Price" placeholder="เช่น 1290.50">
+          @if (gameForm.get('Price')?.hasError('required') && gameForm.get('Price')?.touched) {
+          <mat-error>กรุณากรอกราคา</mat-error>
+          } @else if (gameForm.get('Price')?.hasError('pattern') && gameForm.get('Price')?.touched) {
+          <mat-error>รูปแบบราคาไม่ถูกต้อง (ตัวเลขเท่านั้น)</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- หมวดหมู่เกม (แทนที่ส่วนลด) -->
+        <mat-form-field class="form-group genre-select-field">
+          <mat-label>หมวดหมู่ (เลือกได้หลายอัน)</mat-label>
+          <mat-select formControlName="SelectedGenreIDs" multiple>
+            @for (genre of genres(); track genre.GenreID) {
+            <mat-option [value]="genre.GenreID">{{ genre.GenreName }}</mat-option>
+            }
+          </mat-select>
+          @if (gameForm.get('SelectedGenreIDs')?.hasError('required') && gameForm.get('SelectedGenreIDs')?.touched) {
+          <mat-error>กรุณาเลือกหมวดหมู่อย่างน้อย 1 อัน</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- คำอธิบาย -->
+      <mat-form-field class="form-group">
+        <mat-label>คำอธิบาย</mat-label>
+        <textarea matInput formControlName="Description" rows="6"
+          placeholder="คำอธิบายสั้นๆ เกี่ยวกับเกม..."></textarea>
+        @if (gameForm.get('Description')?.hasError('required') && gameForm.get('Description')?.touched) {
+        <mat-error>กรุณากรอกคำอธิบาย</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="action-buttons">
+        <button type="submit" class="btn btn-edit" mat-raised-button color="primary" (click)="onUpdateGame()"
+          [disabled]="gameForm.invalid || submitStatus() === 'loading'">
+          @if (submitStatus() === 'loading') {
+          <ng-container>
+            <mat-icon>cached</mat-icon>
+          </ng-container>
+          <span>กำลังแก้ไข...</span>
+          } @else {
+          <ng-container>
+            <mat-icon>save</mat-icon>
+          </ng-container>
+          <span>บันทึกการแก้ไข</span>
+          }
+        </button>
+
+        <button type="button" class="btn btn-delete" mat-stroked-button color="warn" (click)="onDeleteGame()"
+          [disabled]="submitStatus() === 'loading'">
+          <mat-icon>delete_forever</mat-icon> ลบเกม
+        </button>
+      </div>
+
+      <!-- แสดงข้อความสถานะ -->
+      @if (submitStatus() === 'error') {
+      <p class="status-message error">เกิดข้อผิดพลาดในการแก้ไข กรุณาลองใหม่อีกครั้ง</p>
+      }
+    </form>
+  </div>
+  }
+</main>

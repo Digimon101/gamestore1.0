@@ -1,0 +1,136 @@
+<div class="home-container">
+  <section class="game-section top-seller">
+    <div class="section-header">
+      <h2 class="section-title">Top Seller</h2>
+      <button mat-button class="view-all-btn">View All <mat-icon>arrow_forward</mat-icon></button>
+    </div>
+
+    <div class="carousel-wrapper">
+      <div class="carousel-container">
+        <button mat-icon-button class="nav-button nav-left" (click)="scrollLeft()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="game-grid" #topSellerScroll (scroll)="onScroll()">
+          @for (game of topSellerGames(); track game.GameID) {
+            <div class="game-card clickable" (click)="viewGameDetails(game)">
+              <div class="card-image">
+                @if (game.ImageUrl) {
+                  <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
+                } @else {
+                  <div class="placeholder-image">
+                    <mat-icon>photo_camera</mat-icon>
+                  </div>
+                }
+              </div>
+              <div class="card-content">
+                <h3 class="game-title">{{ game.Title }}</h3>
+                <p class="game-description">
+                  {{ (game.Description || '').length > 80 ? (game.Description || '').substring(0, 80) + '...' : game.Description }}
+                </p>
+                <div class="card-footer">
+                  <span class="price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
+                  @if (isGamePurchased(game.GameID)) {
+                    <button mat-stroked-button class="owned-button" disabled>
+                      <mat-icon>check</mat-icon> In Library
+                    </button>
+                  } @else {
+                    <button mat-raised-button color="primary" class="buy-button" (click)="onBuyGame(game); $event.stopPropagation()">
+                      <mat-icon>shopping_cart</mat-icon> Buy
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              <mat-icon>hourglass_empty</mat-icon>
+              <p>Loading Top Seller games...</p>
+            </div>
+          }
+        </div>
+        <button mat-icon-button class="nav-button nav-right" (click)="scrollRight()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <div class="carousel-dots">
+          @for (dot of carouselDots(); track $index) {
+            <button class="dot"
+                    [class.active]="$index === currentDotIndex()"
+                    (click)="scrollToPage($index)">
+            </button>
+          }
+      </div>
+    </div>
+  </section>
+
+  <section class="game-section popular">
+    <div class="section-header">
+      <h2 class="section-title">Popular</h2>
+      <button mat-button class="view-all-btn">View All <mat-icon>arrow_forward</mat-icon></button>
+    </div>
+    <div class="game-grid">
+      @for (game of popularGames(); track game.GameID) {
+        <div class="game-card clickable" (click)="viewGameDetails(game)">
+          <div class="card-image">
+             @if (game.ImageUrl) {
+                <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
+             } @else {
+                <div class="placeholder-image">
+                    <mat-icon>photo_camera</mat-icon>
+                </div>
+             }
+          </div>
+          <div class="card-content">
+            <h3 class="game-title">{{ game.Title }}</h3>
+             <p class="game-description">
+               {{ (game.Description || '').length > 80 ? (game.Description || '').substring(0, 80) + '...' : game.Description }}
+            </p>
+            <div class="card-footer">
+               <span class="price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
+              @if (isGamePurchased(game.GameID)) {
+                <button mat-stroked-button class="owned-button" disabled>
+                  <mat-icon>check</mat-icon> In Library
+                </button>
+              } @else {
+                <button mat-raised-button color="primary" class="buy-button" (click)="onBuyGame(game); $event.stopPropagation()">
+                  <mat-icon>shopping_cart</mat-icon> Buy
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>Loading popular games...</p>
+        </div>
+      }
+    </div>
+  </section>
+</div>
+
+
+<!-- [NEW] Custom Popup Card Section -->
+@if (isPopupVisible()) {
+  <div class="popup-overlay" (click)="closePopup()">
+    <div class="popup-card" [ngClass]="popupConfig().title.toLowerCase()" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <h3 class="popup-title">{{ popupConfig().title }}</h3>
+        <button class="close-button" (click)="closePopup()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="popup-content">
+        <p>{{ popupConfig().message }}</p>
+      </div>
+      <div class="popup-actions">
+        @if (popupConfig().showConfirmButton) {
+          <button mat-stroked-button color="warn" (click)="closePopup()">Cancel</button>
+          <button mat-raised-button color="primary" (click)="handlePurchaseConfirmation()">Confirm</button>
+        } @else {
+          <button mat-raised-button color="primary" (click)="closePopup()">OK</button>
+        }
+      </div>
+    </div>
+  </div>
+}

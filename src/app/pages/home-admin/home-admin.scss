@@ -1,0 +1,189 @@
+/* --- [NEW] Modern Admin Dashboard Theme --- */
+$bg-color: #f8f9fa;
+$surface-color: #ffffff;
+$primary-text: #212529;
+$secondary-text: #6c757d;
+$border-color: #e9ecef;
+$primary-accent: #007bff;
+$danger-color: #dc3545;
+
+/* --- Main Container & Layout --- */
+.admin-home-container {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  background-color: $bg-color;
+}
+
+/* --- Page Header --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid $border-color;
+
+  h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+/* --- Section Styles --- */
+.game-section {
+  margin-bottom: 3.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin: 0;
+        border: none;
+    }
+    .view-all-link {
+        color: $primary-accent;
+        text-decoration: none;
+        font-weight: 500;
+        &:hover { text-decoration: underline; }
+    }
+}
+
+
+/* --- [REDESIGNED] Admin Game Card --- */
+.game-card {
+  background: $surface-color;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.card-image {
+  height: 160px;
+  background-color: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+  .placeholder-image mat-icon { font-size: 48px; color: #ced4da; }
+}
+
+.card-content {
+  padding: 1rem 1.25rem;
+  flex-grow: 1;
+}
+
+.game-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-price {
+    font-size: 1rem;
+    color: $secondary-text;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid $border-color;
+
+  .edit-button {
+    flex-grow: 1; // Make edit button take more space
+    margin-right: 0.5rem;
+  }
+}
+
+/* --- Carousel Styles --- */
+.top-seller .game-grid {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.top-seller .game-card {
+  flex: 0 0 calc((100% - 4.5rem) / 4); // 4 cards with 1.5rem gap
+  scroll-snap-align: start;
+}
+
+.carousel-wrapper {
+  position: relative;
+}
+.carousel-container {
+  display: flex;
+  align-items: center;
+}
+
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid $border-color;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  &:hover { background-color: #fff; }
+  &.nav-left { left: -22px; }
+  &.nav-right { right: -22px; }
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 1.5rem 0 0 0;
+
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%; border: none;
+    background-color: #ced4da;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    &.active { background-color: $primary-accent; transform: scale(1.2); }
+  }
+}
+
+
+/* --- Popular Grid Section --- */
+.popular .game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* --- Empty State --- */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem;
+  color: $secondary-text;
+  mat-icon { font-size: 3rem; margin-bottom: 1rem; }
+}

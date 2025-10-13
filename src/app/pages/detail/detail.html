@@ -1,0 +1,112 @@
+<div class="page-container">
+  @if (isLoading()) {
+    <div class="state-container"><h2>Loading Game Details...</h2></div>
+  }
+  @if (error()) {
+    <div class="state-container error">
+      <h2>Oops! Something went wrong.</h2>
+      <p>{{ error() }}</p>
+      <a class="btn btn-secondary" routerLink="/main">Back to Home</a>
+    </div>
+  }
+
+  @if (game(); as currentGame) {
+    <main class="content-grid">
+      <div class="left-column">
+        <div class="game-banner">
+          @if(currentGame.ImageUrl){
+            <img [src]="currentGame.ImageUrl" [alt]="currentGame.Title + ' banner'">
+          } @else {
+            <div class="placeholder-banner">
+              <mat-icon>photo_camera</mat-icon>
+            </div>
+          }
+        </div>
+
+        <div class="main-info-card">
+          <h1>{{ currentGame.Title }}</h1>
+          <div class="meta-info">
+            <span class="meta-item"><mat-icon>star</mat-icon> 4.5 / 5.0</span>
+            <span class="meta-item"><mat-icon>event</mat-icon> Released: {{ currentGame.ReleaseDate | date:'longDate' }}</span>
+          </div>
+        </div>
+
+        <div class="tabs-card">
+          <nav class="tab-nav">
+            <button [class.active]="activeTab === 'about'" (click)="selectTab('about')">About Game</button>
+            <button [class.active]="activeTab === 'system'" (click)="selectTab('system')">System Requirements</button>
+            <button [class.active]="activeTab === 'feature'" (click)="selectTab('feature')">Features</button>
+          </nav>
+          <div class="tab-content">
+            @if (activeTab === 'about') {
+              <p class="description">{{ currentGame.Description }}</p>
+            }
+            @if (activeTab === 'system') {
+              <p>System requirements are not available at this time.</p>
+            }
+            @if (activeTab === 'feature') {
+              <p>Key features are not available at this time.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="right-column">
+        <div class="purchase-card">
+          <div class="price-wrapper">
+             <span class="price-label">Price</span>
+             <span class="price">{{ currentGame.Price > 0 ? (currentGame.Price | currency:'USD') : 'Free' }}</span>
+          </div>
+          <div class="action-buttons">
+            @if (isPurchased()) {
+              <button class="btn btn-purchased" disabled>
+                <mat-icon>check_circle</mat-icon> In Library
+              </button>
+            } @else {
+              <button class="btn btn-primary" (click)="onPurchase()">Buy Now</button>
+            }
+            <button class="btn btn-secondary">
+              <mat-icon>favorite_border</mat-icon> Add to Wishlist
+            </button>
+          </div>
+        </div>
+
+        <div class="top-seller-card">
+          <h3>Top Sellers</h3>
+          <ul class="top-seller-list">
+            @for (sellerGame of topSellers(); track sellerGame.GameID) {
+              <li class="clickable-item" (click)="goToGameDetail(sellerGame.GameID)">
+                <img [src]="sellerGame.ImageUrl" [alt]="sellerGame.Title">
+                <span>{{ sellerGame.Title }}</span>
+              </li>
+            } @empty {
+              <p class="no-sellers">Could not load top sellers.</p>
+            }
+          </ul>
+        </div>
+      </div>
+    </main>
+  }
+</div>
+
+<!-- Custom Popup Card Section -->
+@if (isPopupVisible()) {
+<div class="popup-overlay" (click)="closePopup()">
+  <div class="popup-card" [class]="popupConfig().title.toLowerCase()" (click)="$event.stopPropagation()">
+    <div class="popup-header">
+      <h3>{{ popupConfig().title }}</h3>
+    </div>
+    <div class="popup-content">
+      <p>{{ popupConfig().message }}</p>
+    </div>
+    <div class="popup-actions">
+      @if (popupConfig().showConfirmButton) {
+      <button class="btn btn-secondary" (click)="closePopup()">Cancel</button>
+      <button class="btn btn-primary" (click)="handlePurchaseConfirmation()">Confirm</button>
+      } @else {
+      <button class="btn btn-primary" (click)="closePopup()">OK</button>
+      }
+    </div>
+  </div>
+</div>
+}
