@@ -16,6 +16,7 @@ import { Wallet } from './pages/wallet/wallet';
 import { authGuard, userGuard, adminGuard } from './guards/auth.guard';
 import { Detail } from './pages/detail/detail';
 import { DetailViewUser } from './pages/detail-veiw-user/detail-veiw-user';
+import { Cart } from './pages/cart/cart';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -43,6 +44,7 @@ export const routes: Routes = [
   { path: 'addgame', component: Addgame, canActivate: [adminGuard] },
   { path: 'editgame', component: Editgame, canActivate: [adminGuard] },
   { path: 'view-user/:id', component: DetailViewUser, canActivate: [adminGuard] },
+  { path: 'cart', component: Cart, canActivate: [userGuard] },
 
 
   // --- Default Fallback ---

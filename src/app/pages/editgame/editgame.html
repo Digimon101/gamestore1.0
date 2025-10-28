@@ -1,112 +1,133 @@
 <main class="main-content">
-  <!-- Input file ที่ซ่อนอยู่: ต้องมี #fileInput และผูกกับ onFileSelected() -->
+  <!-- Hidden file input -->
   <input type="file" #fileInput hidden (change)="onFileSelected($event)" accept="image/*">
 
-  <!-- แสดง Loading State หรือ Error State -->
+  <!-- Loading / Error States -->
   @if (!isGameLoaded()) {
-  <div class="loading-state">
-    <mat-icon>hourglass_empty</mat-icon>
-    <p>กำลังโหลดข้อมูลเกม...</p>
-  </div>
-  } @else if (gameId() === null) {
-  <div class="error-state">
-    <mat-icon>error_outline</mat-icon>
-    <p>ไม่พบ ID เกมสำหรับแก้ไข</p>
-    <button mat-raised-button color="warn" (click)="goHome()">กลับหน้าหลัก</button>
-  </div>
-  } @else {
-  <!-- แสดงฟอร์มเมื่อโหลดข้อมูลเสร็จแล้ว -->
-  <div class="edit-card">
-    <div class="image-upload-container">
-      <!-- แสดงรูปภาพเดิมหรือรูปภาพ Preview ใหม่ -->
-      @if (imagePreview()) {
-      <img [src]="imagePreview()" alt="Game Image" class="game-image" />
-      } @else {
-      <div class="image-placeholder">
-        <!-- SVG/Icon Placeholder -->
-        <mat-icon>image_not_supported</mat-icon>
-        <p>ไม่มีรูปภาพ</p>
-      </div>
-      }
-      <!-- ปุ่ม + สำหรับเรียก onAddImage() -->
-      <button type="button" class="add-image-btn" (click)="onAddImage()">+</button>
+    <div class="loading-state">
+      <mat-icon>hourglass_empty</mat-icon>
+      <p>กำลังโหลดข้อมูลเกม...</p>
     </div>
-
-    <!-- ฟอร์มแก้ไขเกม -->
-    <form class="edit-form" [formGroup]="gameForm">
-
-      <!-- ชื่อเกม -->
-      <mat-form-field class="form-group">
-        <mat-label>ชื่อเกม</mat-label>
-        <input matInput formControlName="Title" placeholder="เช่น Elden Ring">
-        @if (gameForm.get('Title')?.hasError('required') && gameForm.get('Title')?.touched) {
-        <mat-error>กรุณากรอกชื่อเกม</mat-error>
+  } @else if (gameId() === null) {
+    <div class="error-state">
+      <mat-icon>error_outline</mat-icon>
+      <p>ไม่พบ ID เกมสำหรับแก้ไข</p>
+      <button mat-raised-button color="warn" (click)="goHome()">กลับหน้าหลัก</button>
+    </div>
+  } @else {
+    <!-- Form Content -->
+    <div class="edit-card">
+      <div class="image-upload-container">
+        @if (imagePreview()) {
+          <img [src]="imagePreview()" alt="Game Image Preview" class="game-image" />
+        } @else {
+          <div class="image-placeholder">
+            <mat-icon>image_not_supported</mat-icon>
+            <p>ไม่มีรูปภาพ</p>
+          </div>
         }
-      </mat-form-field>
+        <button type="button" class="add-image-btn" (click)="onAddImage()">+</button>
+      </div>
 
-      <div class="form-row">
-        <!-- ราคา -->
+      <!-- Edit Game Form -->
+      <form class="edit-form" [formGroup]="gameForm" (ngSubmit)="onUpdateGame()"> <!-- Added ngSubmit -->
+
+        <!-- Game Title -->
         <mat-form-field class="form-group">
-          <mat-label>ราคา</mat-label>
-          <input matInput type="text" formControlName="Price" placeholder="เช่น 1290.50">
-          @if (gameForm.get('Price')?.hasError('required') && gameForm.get('Price')?.touched) {
-          <mat-error>กรุณากรอกราคา</mat-error>
-          } @else if (gameForm.get('Price')?.hasError('pattern') && gameForm.get('Price')?.touched) {
-          <mat-error>รูปแบบราคาไม่ถูกต้อง (ตัวเลขเท่านั้น)</mat-error>
+          <mat-label>ชื่อเกม</mat-label>
+          <input matInput formControlName="Title" placeholder="เช่น Elden Ring" required>
+          @if (gameForm.get('Title')?.touched && gameForm.get('Title')?.hasError('required')) {
+            <mat-error>กรุณากรอกชื่อเกม</mat-error>
           }
         </mat-form-field>
 
-        <!-- หมวดหมู่เกม (แทนที่ส่วนลด) -->
-        <mat-form-field class="form-group genre-select-field">
-          <mat-label>หมวดหมู่ (เลือกได้หลายอัน)</mat-label>
-          <mat-select formControlName="SelectedGenreIDs" multiple>
-            @for (genre of genres(); track genre.GenreID) {
-            <mat-option [value]="genre.GenreID">{{ genre.GenreName }}</mat-option>
+        <!-- Price & Genres Row -->
+        <div class="form-row">
+          <mat-form-field class="form-group">
+            <mat-label>ราคา</mat-label>
+            <input matInput type="text" formControlName="Price" placeholder="เช่น 1290.50" required pattern="^[0-9]+(\.[0-9]{1,2})?$">
+            @if (gameForm.get('Price')?.touched && gameForm.get('Price')?.hasError('required')) {
+              <mat-error>กรุณากรอกราคา</mat-error>
+            } @else if (gameForm.get('Price')?.touched && gameForm.get('Price')?.hasError('pattern')) {
+              <mat-error>รูปแบบราคาไม่ถูกต้อง</mat-error>
             }
-          </mat-select>
-          @if (gameForm.get('SelectedGenreIDs')?.hasError('required') && gameForm.get('SelectedGenreIDs')?.touched) {
-          <mat-error>กรุณาเลือกหมวดหมู่อย่างน้อย 1 อัน</mat-error>
+          </mat-form-field>
+          <mat-form-field class="form-group genre-select-field">
+            <mat-label>หมวดหมู่</mat-label>
+            <mat-select formControlName="SelectedGenreIDs" multiple required>
+              @for (genre of genres(); track genre.GenreID) {
+                <mat-option [value]="genre.GenreID">{{ genre.GenreName }}</mat-option>
+              }
+            </mat-select>
+             @if (gameForm.get('SelectedGenreIDs')?.touched && gameForm.get('SelectedGenreIDs')?.hasError('required')) {
+               <mat-error>กรุณาเลือกอย่างน้อย 1 หมวดหมู่</mat-error>
+             }
+          </mat-form-field>
+        </div>
+
+        <!-- Description -->
+        <mat-form-field class="form-group">
+          <mat-label>คำอธิบาย</mat-label>
+          <textarea matInput formControlName="Description" rows="5" placeholder="คำอธิบาย..." required></textarea>
+           @if (gameForm.get('Description')?.touched && gameForm.get('Description')?.hasError('required')) {
+            <mat-error>กรุณากรอกคำอธิบาย</mat-error>
           }
         </mat-form-field>
-      </div>
 
-      <!-- คำอธิบาย -->
-      <mat-form-field class="form-group">
-        <mat-label>คำอธิบาย</mat-label>
-        <textarea matInput formControlName="Description" rows="6"
-          placeholder="คำอธิบายสั้นๆ เกี่ยวกับเกม..."></textarea>
-        @if (gameForm.get('Description')?.hasError('required') && gameForm.get('Description')?.touched) {
-        <mat-error>กรุณากรอกคำอธิบาย</mat-error>
+        <!-- --- [NEW] Promotion Section --- -->
+        <fieldset class="promotion-fieldset">
+            <legend>ตั้งค่าโปรโมชั่น (Optional)</legend>
+            <div class="form-row">
+                <!-- Discount Percentage -->
+                <mat-form-field class="form-group">
+                  <mat-label>ส่วนลด (%)</mat-label>
+                  <input matInput type="number" formControlName="discountPercentage" placeholder="เช่น 20" min="1" max="100">
+                   @if (gameForm.get('discountPercentage')?.hasError('min') || gameForm.get('discountPercentage')?.hasError('max')) {
+                    <mat-error>ใส่ค่าระหว่าง 1 - 100</mat-error>
+                  }
+                </mat-form-field>
+            </div>
+            <div class="form-row">
+                <!-- Start Date -->
+                <mat-form-field class="form-group">
+                  <mat-label>วันที่เริ่ม</mat-label>
+                  <input matInput type="date" formControlName="promotionStartDate">
+                </mat-form-field>
+                <!-- End Date -->
+                <mat-form-field class="form-group">
+                  <mat-label>วันที่สิ้นสุด</mat-label>
+                  <input matInput type="date" formControlName="promotionEndDate">
+                   @if (gameForm.hasError('dateOrder') && gameForm.get('promotionEndDate')?.touched) {
+                       <mat-error>วันที่สิ้นสุดต้องไม่มาก่อนวันที่เริ่ม</mat-error>
+                   }
+                </mat-form-field>
+            </div>
+             <p class="field-hint">ปล่อยว่างช่องส่วนลด (%) หากไม่ต้องการตั้งโปรโมชั่น (โปรโมชั่นเก่าจะถูกปิดใช้งาน)</p>
+        </fieldset>
+        <!-- --- End Promotion Section --- -->
+
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button type="submit" class="btn btn-edit" mat-raised-button color="primary" [disabled]="gameForm.invalid || submitStatus() === 'loading'">
+            @if (submitStatus() === 'loading') {
+              <span><mat-icon>hourglass_empty</mat-icon> กำลังบันทึก...</span>
+            } @else {
+              <span><mat-icon>save</mat-icon> บันทึกการแก้ไข</span>
+            }
+          </button>
+          <button type="button" class="btn btn-delete" mat-stroked-button color="warn" (click)="onDeleteGame()" [disabled]="submitStatus() === 'loading'">
+            <mat-icon>delete_forever</mat-icon> ลบเกม
+          </button>
+        </div>
+
+        <!-- Status Message -->
+        @if (submitStatus() === 'error') {
+          <p class="status-message error">เกิดข้อผิดพลาดในการบันทึก</p>
+        } @else if (submitStatus() === 'success') {
+             <p class="status-message success">บันทึกข้อมูลสำเร็จ!</p> <!-- Optional success message -->
         }
-      </mat-form-field>
-
-      <div class="action-buttons">
-        <button type="submit" class="btn btn-edit" mat-raised-button color="primary" (click)="onUpdateGame()"
-          [disabled]="gameForm.invalid || submitStatus() === 'loading'">
-          @if (submitStatus() === 'loading') {
-          <ng-container>
-            <mat-icon>cached</mat-icon>
-          </ng-container>
-          <span>กำลังแก้ไข...</span>
-          } @else {
-          <ng-container>
-            <mat-icon>save</mat-icon>
-          </ng-container>
-          <span>บันทึกการแก้ไข</span>
-          }
-        </button>
-
-        <button type="button" class="btn btn-delete" mat-stroked-button color="warn" (click)="onDeleteGame()"
-          [disabled]="submitStatus() === 'loading'">
-          <mat-icon>delete_forever</mat-icon> ลบเกม
-        </button>
-      </div>
-
-      <!-- แสดงข้อความสถานะ -->
-      @if (submitStatus() === 'error') {
-      <p class="status-message error">เกิดข้อผิดพลาดในการแก้ไข กรุณาลองใหม่อีกครั้ง</p>
-      }
-    </form>
-  </div>
+      </form>
+    </div>
   }
 </main>

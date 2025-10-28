@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment'; // <-- [NEW] Import environment
 
 @Component({
   selector: 'app-edit-profile',
@@ -23,7 +24,7 @@ import { AuthService } from '../services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
-    HttpClientModule // ✅ เพิ่ม HttpClientModule
+    HttpClientModule
   ],
   templateUrl: './edit-profile.html',
   styleUrls: ['./edit-profile.scss']
@@ -33,8 +34,8 @@ export class EditProfile implements OnInit {
   profileForm!: FormGroup;
   selectedFile: File | null = null;
 
-  previewUrl: string | null = null; // รูปที่เลือกใหม่
-  currentImageUrl: string | null = null; // รูปเดิมจาก backend
+  previewUrl: string | null = null;
+  currentImageUrl: string | null = null;
 
   constructor(
     private router: Router,
@@ -51,11 +52,11 @@ export class EditProfile implements OnInit {
       return;
     }
 
-    // รูปเดิมจาก backend
+    // [MODIFIED] Use environment.API_BASE_URL for the image path
     this.currentImageUrl = this.user.image
-      ? this.user.image.startsWith('http')
+      ? this.user.image.startsWith('http') // Check if it's already an absolute URL (less likely now)
         ? this.user.image
-        : `https://sqlserverwebgame-main.onrender.com${this.user.image}`
+        : `${environment.API_BASE_URL}${this.user.image}` // Prepend base URL
       : null;
 
     this.initializeForm();
@@ -65,10 +66,10 @@ export class EditProfile implements OnInit {
     this.profileForm = this.fb.group({
       name: [this.user.name || '', [Validators.required, Validators.minLength(2)]],
       email: [this.user.email, [Validators.required, Validators.email]]
+      // Password fields can be added here if needed
     });
   }
 
-  // เลือกรูปใหม่
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -78,96 +79,109 @@ export class EditProfile implements OnInit {
         this.snackBar.open('Please select an image file', 'Close', { duration: 3000 });
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
         this.snackBar.open('Image size must be less than 5MB', 'Close', { duration: 3000 });
         return;
       }
 
       this.selectedFile = file;
-
       const reader = new FileReader();
       reader.onload = () => {
-        this.previewUrl = reader.result as string; // แสดง preview
+        this.previewUrl = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
   }
 
-  // ลบ preview กลับไปใช้รูปเดิม
   removeImage(): void {
     this.selectedFile = null;
     this.previewUrl = null;
+    // Reset file input visually if possible (can be tricky)
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 
-  // บันทึก
+
   onSaveProfile(): void {
-    if (this.profileForm.invalid || !this.user?.id) { // เพิ่มการตรวจสอบ user.id
+    if (this.profileForm.invalid || !this.user?.id) {
       this.snackBar.open('Please fill all required fields correctly', 'Close', { duration: 3000 });
+      // Mark fields as touched to show errors
+      Object.values(this.profileForm.controls).forEach(control => control.markAsTouched());
       return;
     }
 
     const formData = new FormData();
-
-    // ไม่จำเป็นต้องส่ง id ใน body แล้ว เพราะเราส่งไปกับ URL
-    // formData.append('id', this.user.id); 
-
     formData.append('name', this.profileForm.value.name);
     formData.append('email', this.profileForm.value.email);
     if (this.selectedFile) {
       formData.append('image', this.selectedFile, this.selectedFile.name);
     }
+    // Note: No need to send original image URL if backend handles it based on file presence
 
-    // ✅ แก้ไขตรงนี้: สร้าง URL แบบ dynamic โดยใช้ backticks (`)
-    const updateUrl = `https://sqlserverwebgame-main.onrender.com/update-profile/${this.user.id}`;
+    // [MODIFIED] Use environment.API_BASE_URL for the update URL
+    const updateUrl = `${environment.API_BASE_URL}/update-profile/${this.user.id}`;
 
-    this.http.put(updateUrl, formData) // ใช้ URL ที่สร้างขึ้นใหม่
+    this.http.put<{ updatedData: any }>(updateUrl, formData) // Specify expected response type
       .subscribe({
-        next: (res: any) => {
-          // สมมติว่า backend ส่งข้อมูล user ที่อัปเดตแล้วกลับมาใน res.updatedData
-          const updatedUser = { ...this.user, ...res.updatedData };
+        next: (res) => {
+          // Assuming backend sends back the updated user data or at least the new image path
+          const updatedUserInfo = res.updatedData || {
+                name: this.profileForm.value.name,
+                email: this.profileForm.value.email,
+                // Attempt to construct the new image URL if backend doesn't send it fully
+                image: res.updatedData?.image || (this.selectedFile ? `/profile/${this.selectedFile.name}` : this.user.image) // Needs careful backend coordination
+            };
 
-          this.authService.setUser(updatedUser); // อัปเดตข้อมูลใน service
+          const updatedUser = { ...this.user, ...updatedUserInfo };
 
-          // อัปเดตข้อมูลที่แสดงผลในหน้านี้
+          this.authService.setUser(updatedUser); // Update AuthService
+
+          // Update local component state
           this.user = updatedUser;
+          // Reconstruct currentImageUrl based on potentially new path
           this.currentImageUrl = updatedUser.image
-            ? `https://sqlserverwebgame-main.onrender.com${updatedUser.image}`
+            ? `${environment.API_BASE_URL}${updatedUser.image}`
             : null;
 
-          this.previewUrl = null; // ล้าง preview
-          this.selectedFile = null; // ล้างไฟล์ที่เลือก
+          this.previewUrl = null; // Clear preview
+          this.selectedFile = null; // Clear selected file
 
           this.snackBar.open('✅ Profile updated successfully!', 'Close', {
             duration: 3000,
-            panelClass: ['success-snackbar'] // Optional: for custom styling
+            panelClass: ['success-snackbar']
           });
 
-          // Redirect กลับไปหน้า profile
-          this.router.navigate(['/profile']);
+          this.router.navigate(['/profile']); // Navigate back to profile page
 
         },
         error: (err) => {
           console.error('Update profile error:', err);
           this.snackBar.open(`❌ Failed to update profile: ${err.error?.message || 'Server error'}`, 'Close', {
             duration: 4000,
-            panelClass: ['error-snackbar'] // Optional: for custom styling
+            panelClass: ['error-snackbar']
           });
         }
       });
   }
-  // สำหรับ template: ใช้รูป preview ก่อน ถ้าไม่มี ใช้ currentImageUrl
+
+  // Getter for template to display preview or current image
   get displayedImage(): string | null {
     return this.previewUrl || this.currentImageUrl;
   }
 
   onCancel(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/profile']); // Navigate back without saving
   }
 
   onDeleteAccount(): void {
-    if (confirm('Are you sure you want to delete your account?')) {
-      this.authService.logout();
-      this.snackBar.open('Account deleted successfully', 'Close', { duration: 3000 });
+    // Implement proper account deletion logic here (API call)
+    if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+        console.warn('Account deletion not implemented yet.');
+        // Example API Call (needs backend endpoint):
+        // this.http.delete(`${environment.API_BASE_URL}/users/${this.user.id}`).subscribe({ ... });
+        // this.authService.logout();
+        // this.snackBar.open('Account deleted successfully', 'Close', { duration: 3000 });
+        alert('Account deletion feature not yet implemented.');
     }
   }
 }

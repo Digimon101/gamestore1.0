@@ -1,193 +1,506 @@
-/* --- [NEW] Modern Color Palette & Variables --- */
-$primary-text: #212529;
-$secondary-text: #6c757d;
-$background-color: #f8f9fa;
-$card-background: #ffffff;
-$border-color: #e9ecef;
-$primary-accent: #007bff;
-$success-color: #28a745;
+/* --- Premium White Theme Gaming Store --- */
+$bg-light: #f8f9fa;
+$bg-white: #ffffff;
+$surface-card: rgba(255, 255, 255, 0.95);
+$surface-hover: rgba(255, 255, 255, 1);
+$glass-border: rgba(0, 0, 0, 0.08);
+$shadow-light: rgba(0, 0, 0, 0.05);
+$shadow-medium: rgba(0, 0, 0, 0.1);
+$shadow-heavy: rgba(0, 0, 0, 0.15);
+$primary-text: #1a1a1a;
+$secondary-text: #6b7280;
+$muted-text: #9ca3af;
+$accent-dark: #000000;
+$accent-gradient: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
+$success-color: #10b981;
 
-/* --- Main Container & Layout --- */
+/* --- Main Container with Light Dynamic Background --- */
 .home-container {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 3rem 2.5rem;
+  max-width: 1600px;
   margin: 0 auto;
-  background-color: $background-color;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 50%, #fafafa 100%);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 15% 20%, rgba(0, 0, 0, 0.02), transparent 40%),
+      radial-gradient(circle at 85% 60%, rgba(0, 0, 0, 0.025), transparent 40%),
+      radial-gradient(circle at 50% 90%, rgba(0, 0, 0, 0.015), transparent 40%);
+    pointer-events: none;
+    animation: backgroundShift 20s ease infinite;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(0, 0, 0, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
+@keyframes backgroundShift {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* --- Section Styles --- */
 .game-section {
   margin-bottom: 4rem;
+
+  &:last-child {
+    margin-bottom: 2rem;
+  }
 }
 
-/* --- [NEW] Section Header --- */
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem 0;
 
   .section-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: $primary-text;
+    font-size: 2.25rem;
+    font-weight: 900;
     margin: 0;
-    border-bottom: none; // ลบเส้นขอบเก่าออก
+    color: $primary-text;
+    letter-spacing: -0.8px;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 60px;
+      height: 4px;
+      background: $accent-dark;
+      border-radius: 2px;
+    }
   }
 
   .view-all-btn {
-    color: $primary-accent;
-    font-weight: 500;
+    color: $primary-text;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    background: $bg-white;
+    border: 2px solid $glass-border;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px $shadow-light;
+
+    &:hover {
+      background: $bg-light;
+      border-color: rgba(0, 0, 0, 0.15);
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px $shadow-medium;
+    }
+
+    mat-icon {
+      margin-left: 0.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover mat-icon {
+      transform: translateX(4px);
+    }
   }
 }
 
-/* --- [REDESIGNED] Game Card --- */
+/* --- Premium White Game Card Design --- */
 .game-card {
-  background-color: $card-background;
-  border-radius: 16px;
+  background: $surface-card;
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid $glass-border;
+  box-shadow: 
+    0 4px 16px $shadow-light,
+    0 2px 8px $shadow-light;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  position: relative;
+  cursor: pointer;
 
-  &.clickable:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.04) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+    border-radius: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-12px);
+    box-shadow: 
+      0 16px 48px $shadow-medium,
+      0 8px 24px $shadow-light,
+      0 0 0 1px rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.12);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .card-image img {
+      transform: scale(1.15);
+    }
+
+    .discount-badge {
+      animation: discountPulse 0.6s ease-in-out;
+    }
+
+    .game-title {
+      color: #4a4a4a;
+    }
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
   }
 }
 
+/* --- Card Image --- */
 .card-image {
-  height: 180px;
-  background-color: #f0f2f5;
+  height: 200px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  position: relative;
   overflow: hidden;
 
-  .game-image {
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .game-card:hover &::after {
+    opacity: 1;
+  }
+
+  img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .placeholder-image mat-icon {
-    font-size: 48px;
-    color: #ced4da;
+
+  .placeholder-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: $muted-text;
+      opacity: 0.4;
+      animation: float 3s ease-in-out infinite;
+    }
   }
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* --- Card Content --- */
 .card-content {
-  padding: 1rem 1.25rem;
+  padding: 1.5rem;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  flex-grow: 1; /* ทำให้ content ขยายเต็มพื้นที่ */
+  gap: 0.75rem;
+  background: $bg-white;
 }
 
 .game-title {
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
   color: $primary-text;
-  margin: 0 0 0.5rem 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  transition: color 0.3s ease;
 }
 
 .game-description {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: $secondary-text;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  flex-grow: 1; /* ดัน footer ลงไปข้างล่าง */
+  line-height: 1.6;
+  margin: 0;
+  flex-grow: 1;
 }
 
+/* --- Price Display --- */
+.price-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.game-price {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: $primary-text;
+  letter-spacing: -0.5px;
+}
+
+.original-price {
+  font-size: 1rem;
+  color: $muted-text;
+  text-decoration: line-through;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.discounted-price {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: $primary-text;
+  letter-spacing: -0.5px;
+}
+
+/* --- Discount Badge --- */
+.discount-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.8rem;
+  background: $accent-dark;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 900;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .game-card:hover &::before {
+    left: 100%;
+  }
+}
+
+@keyframes discountPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* --- Action Buttons --- */
 .card-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto; /* จัดชิดด้านล่าง */
-  padding-top: 1rem;
-  border-top: 1px solid $border-color;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid $glass-border;
+  background: $bg-white;
+
+  button {
+    flex: 1;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.75rem 1.5rem;
+
+    mat-icon {
+      margin-right: 0.5rem;
+      font-size: 20px;
+    }
+  }
+
+  .add-to-cart-button {
+    background: $accent-dark;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      background: #2a2a2a;
+    }
+  }
+
+  .in-cart-button {
+    background: rgba(16, 185, 129, 0.1);
+    color: $success-color;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+
+    mat-icon {
+      color: $success-color;
+    }
+  }
+
+  .owned-button {
+    background: $bg-light;
+    color: $secondary-text;
+    border: 2px solid $glass-border;
+
+    mat-icon {
+      color: $secondary-text;
+    }
+  }
 }
 
-.price {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: $primary-text;
+/* --- Carousel Navigation --- */
+.carousel-wrapper {
+  position: relative;
+  padding: 0 3rem;
 }
 
-.buy-button {
-  border-radius: 8px;
+.carousel-container {
+  position: relative;
 }
 
-/* [MODIFIED] Owned Button Style */
-.owned-button {
-  color: $success-color !important;
-  border-color: rgba($success-color, 0.4) !important;
-  background-color: transparent !important;
-  border-radius: 8px;
-  cursor: default;
-}
-
-/* --- Carousel Specific Styles --- */
-.top-seller .game-grid {
+.game-grid {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
-  padding: 0.5rem; /* Padding เพื่อไม่ให้เงาโดนตัด */
-  margin: -0.5rem; /* Margin ชดเชย */
+  padding: 1rem 0.5rem;
+  margin: -1rem -0.5rem;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .top-seller .game-card {
-  flex: 0 0 calc((100% - 4.5rem) / 4); /* 4 การ์ด, gap 1.5rem */
+  flex: 0 0 calc((100% - 4.5rem) / 4);
   scroll-snap-align: start;
 }
 
-.carousel-wrapper {
-  position: relative;
-}
-.carousel-container {
-  display: flex;
-  align-items: center;
-}
-
+/* --- Navigation Buttons --- */
 .nav-button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid $border-color;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 48px;
+  height: 48px;
+  background: $bg-white;
+  border: 2px solid $glass-border;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px $shadow-light;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: $primary-text;
+  cursor: pointer;
 
   &:hover {
-    background-color: #fff;
+    background: $bg-light;
+    border-color: rgba(0, 0, 0, 0.15);
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 0 8px 24px $shadow-medium;
   }
 
-  &.nav-left { left: -22px; }
-  &.nav-right { right: -22px; }
+  mat-icon {
+    color: $primary-text;
+    font-size: 28px;
+  }
+
+  &.nav-left {
+    left: -24px;
+  }
+
+  &.nav-right {
+    right: -24px;
+  }
 }
 
+/* --- Carousel Dots --- */
 .carousel-dots {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  padding: 1.5rem 0 0 0;
+  gap: 12px;
+  padding: 2rem 0 0.5rem;
 
   .dot {
-    width: 9px;
-    height: 9px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    border: none;
-    background-color: #ced4da;
-    transition: all 0.3s ease;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    &.active {
-      background-color: $primary-accent;
+    position: relative;
+
+    &:hover:not(.active) {
+      background: rgba(0, 0, 0, 0.25);
       transform: scale(1.2);
+    }
+
+    &.active {
+      width: 32px;
+      border-radius: 4px;
+      background: $accent-dark;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      border-color: rgba(0, 0, 0, 0.2);
     }
   }
 }
@@ -195,114 +508,144 @@ $success-color: #28a745;
 /* --- Popular Grid Section --- */
 .popular .game-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 1rem 0;
 }
 
-/* --- States (Loading/Empty) --- */
+/* --- Empty State --- */
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 4rem;
-  color: $secondary-text;
-  mat-icon { font-size: 3rem; margin-bottom: 1rem; }
-}
+  padding: 6rem 2rem;
+  background: $surface-card;
+  border-radius: 24px;
+  border: 1px solid $glass-border;
+  box-shadow: 0 4px 16px $shadow-light;
 
-
-
-/* --- [NEW] Custom Popup Styles --- */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.popup-card {
-  background-color: #ffffff;
-  color: #333;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 450px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  animation: fadeIn 0.3s ease-out;
-  border-top: 5px solid #ccc;
-
-  &.success {
-    border-top-color: #4caf50;
+  mat-icon {
+    font-size: 5rem;
+    width: 5rem;
+    height: 5rem;
+    margin-bottom: 2rem;
+    color: $muted-text;
+    opacity: 0.4;
+    animation: float 3s ease-in-out infinite;
   }
 
-  &.error {
-    border-top-color: #f44336;
-  }
-
-  &.confirm {
-    border-top-color: #2196f3;
-  }
-}
-
-.popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #eee;
-
-  .popup-title {
-    margin: 0;
+  p {
     font-size: 1.25rem;
     font-weight: 600;
+    color: $secondary-text;
+    margin: 0;
+  }
+}
+
+/* --- Notification Popup --- */
+.notification-popup {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: $accent-dark;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  color: white;
+  font-weight: 700;
+  z-index: 1000;
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  mat-icon {
+    font-size: 24px;
+    color: white;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 1400px) {
+  .top-seller .game-card {
+    flex: 0 0 calc((100% - 3rem) / 3);
+  }
+}
+
+@media (max-width: 1024px) {
+  .home-container {
+    padding: 2rem 1.5rem;
   }
 
-  .close-button {
-    background: none;
-    border: none;
-    color: #aaa;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
+  .section-header .section-title {
+    font-size: 2rem;
+  }
 
-    &:hover {
-      color: #333;
+  .top-seller .game-card {
+    flex: 0 0 calc((100% - 1.5rem) / 2);
+  }
+
+  .popular .game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel-wrapper {
+    padding: 0 2rem;
+  }
+
+  .section-header .section-title {
+    font-size: 1.75rem;
+  }
+
+  .top-seller .game-card {
+    flex: 0 0 calc(100% - 1rem);
+  }
+
+  .popular .game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .nav-button {
+    width: 40px;
+    height: 40px;
+
+    mat-icon {
+      font-size: 24px;
     }
   }
 }
 
-.popup-content {
-  padding: 1.5rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  /* Allows \n to create new lines */
-}
-
-.popup-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  background-color: #f7f7f7;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
+@media (max-width: 480px) {
+  .home-container {
+    padding: 1.5rem 1rem;
   }
 
-  to {
-    opacity: 1;
-    transform: scale(1);
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .game-card {
+    border-radius: 16px;
+  }
+
+  .card-image {
+    height: 160px;
   }
 }

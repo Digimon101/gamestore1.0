@@ -1,5 +1,5 @@
-import { Component, signal, OnDestroy, computed, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { Component, signal, OnDestroy, OnInit } from '@angular/core';
+import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,21 +9,17 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+import { AuthService } from '../services/auth.service';
+import { MatSelectModule } from '@angular/material/select';
+import { environment } from '../../environments/environment';
 
-const API_BASE_URL = 'https://sqlserverwebgame-main.onrender.com';
+const API_BASE_URL = 'http://localhost:3000';
 
 interface GameSearchResult {
   GameID: number;
   Title: string;
   Price: number;
   ImageUrl?: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  type: number;
 }
 
 interface Genre {
@@ -44,29 +40,39 @@ interface Genre {
     MatIconModule,
     MatCheckboxModule,
     CommonModule,
-    CurrencyPipe
+    CurrencyPipe,
+    MatSelectModule
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss'
 })
 export class Header implements OnDestroy, OnInit {
   searchControl = new FormControl('');
-  searchResults = signal<GameSearchResult[]>([]);
-  searchStatus = signal<'idle' | 'loading' | 'done' | 'error'>('idle');
-  isSearchFocused = signal<boolean>(false);
-  errorMessage = signal<string>('');
+  searchResults: GameSearchResult[] = [];
+  searchStatus: 'idle' | 'loading' | 'done' | 'error' = 'idle';
+  isSearchFocused = false;
+  errorMessage = '';
 
-  currentUser = signal<User | null>(null);
-  isAdmin = computed(() => this.currentUser()?.type === 1);
+  // ✅ ใช้ตัวแปรธรรมดาสำหรับ isAdmin
+  isAdmin = false;
 
-  // Genre filter properties
+  // ✅ แก้ไข: ใช้ signal สำหรับ genres
   genres = signal<Genre[]>([]);
-  selectedGenres = signal<number[]>([]);
-  isGenreFilterOpen = signal<boolean>(false);
+  selectedGenres: number[] = [];
+  isGenreFilterOpen = false;
+  
+  isCreateCouponModalVisible = signal<boolean>(false);
+  couponCreationStatus = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  couponCreationError = signal<string>('');
+  newCouponForm: FormGroup;
 
   private searchSubscription: Subscription;
+  private userSubscription!: Subscription;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    public authService: AuthService
+  ) {
     this.searchSubscription = this.searchControl.valueChanges
       .pipe(
         debounceTime(300),
@@ -76,24 +82,36 @@ export class Header implements OnDestroy, OnInit {
         if (query && query.trim().length > 0) {
           this.performSearch(query.trim());
         } else {
-          this.searchResults.set([]);
-          this.searchStatus.set('idle');
-          this.errorMessage.set('');
+          this.searchResults = [];
+          this.searchStatus = 'idle';
+          this.errorMessage = '';
         }
       });
+
+    this.newCouponForm = new FormGroup({
+      code: new FormControl('', [
+        Validators.required, 
+        Validators.minLength(4), 
+        Validators.pattern(/^[a-zA-Z0-9]+$/)
+      ]),
+      discount_type: new FormControl('percentage', [Validators.required]),
+      discount_value: new FormControl(null, [Validators.required, Validators.min(0.01)]),
+      expiry_date: new FormControl(null),
+      max_uses: new FormControl(null, [Validators.min(1), Validators.pattern(/^[1-9]\d*$/)])
+    });
+  }
+
+  // ✅ เพิ่ม getter สำหรับ todayDate
+  get todayDate(): string {
+    return new Date().toISOString().split('T')[0];
   }
 
   async ngOnInit(): Promise<void> {
-    // Load user data
-    try {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        this.currentUser.set(JSON.parse(userStr));
-      }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      this.currentUser.set(null);
-    }
+    // Subscribe เพื่อฟัง user changes
+    this.userSubscription = this.authService.currentUser.subscribe(user => {
+      this.isAdmin = user?.type === 1;
+      console.log('👤 User updated in header:', user, '| isAdmin:', this.isAdmin);
+    });
 
     // Load genres
     await this.loadGenres();
@@ -101,69 +119,129 @@ export class Header implements OnDestroy, OnInit {
 
   ngOnDestroy() {
     this.searchSubscription.unsubscribe();
+    this.userSubscription.unsubscribe();
   }
 
+  openCreateCouponModal(): void {
+    this.newCouponForm.reset({ 
+      discount_type: 'percentage', 
+      max_uses: null, 
+      expiry_date: null 
+    });
+    this.couponCreationStatus.set('idle');
+    this.couponCreationError.set('');
+    this.isCreateCouponModalVisible.set(true);
+  }
+
+  closeCreateCouponModal(): void {
+    this.isCreateCouponModalVisible.set(false);
+  }
+
+  async handleCreateCouponSubmit(): Promise<void> {
+    if (this.newCouponForm.invalid) {
+      this.couponCreationError.set('Please fill in all required fields correctly.');
+      this.couponCreationStatus.set('error');
+      return;
+    }
+
+    this.couponCreationStatus.set('loading');
+    this.couponCreationError.set('');
+    const formData = this.newCouponForm.value;
+
+    // Validate percentage
+    if (formData.discount_type === 'percentage' && formData.discount_value > 100) {
+      this.couponCreationError.set('Percentage discount cannot exceed 100.');
+      this.couponCreationStatus.set('error');
+      return;
+    }
+
+    const apiData = {
+      ...formData,
+      max_uses: formData.max_uses ? Number(formData.max_uses) : null
+    };
+
+    try {
+      const response = await fetch(`${environment.API_BASE_URL}/coupons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiData)
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || `Error ${response.status}`);
+      }
+
+      this.couponCreationStatus.set('success');
+      setTimeout(() => this.closeCreateCouponModal(), 1500);
+
+    } catch (error) {
+      this.couponCreationError.set(
+        error instanceof Error ? error.message : 'Could not create coupon.'
+      );
+      this.couponCreationStatus.set('error');
+    }
+  }
+
+  // ✅ แก้ไข: อัพเดต signal แทน property
   async loadGenres() {
     try {
-      const response = await fetch(`${API_BASE_URL}/genres`);
+      const response = await fetch(`${environment.API_BASE_URL}/genres`);
       if (!response.ok) throw new Error('Failed to load genres');
-      
+
       const genresData: Genre[] = await response.json();
-      this.genres.set(genresData);
+      this.genres.set(genresData); // ✅ ใช้ .set() สำหรับ signal
+
     } catch (error) {
       console.error('Error loading genres:', error);
+      this.genres.set([]); // ✅ Set empty array on error
     }
   }
 
   toggleGenreFilter() {
-    this.isGenreFilterOpen.update(val => !val);
+    this.isGenreFilterOpen = !this.isGenreFilterOpen;
   }
 
   toggleGenre(genreId: number) {
-    const current = this.selectedGenres();
-    const index = current.indexOf(genreId);
-    
+    const index = this.selectedGenres.indexOf(genreId);
+
     if (index > -1) {
-      // Remove genre
-      this.selectedGenres.set(current.filter(id => id !== genreId));
+      this.selectedGenres = this.selectedGenres.filter(id => id !== genreId);
     } else {
-      // Add genre
-      this.selectedGenres.set([...current, genreId]);
+      this.selectedGenres = [...this.selectedGenres, genreId];
     }
   }
 
   isGenreSelected(genreId: number): boolean {
-    return this.selectedGenres().includes(genreId);
+    return this.selectedGenres.includes(genreId);
   }
 
   clearGenreFilter() {
-    this.selectedGenres.set([]);
+    this.selectedGenres = [];
   }
 
   applyGenreFilter() {
-    const selected = this.selectedGenres();
-    if (selected.length > 0) {
-      // Navigate to search page with genre filter
-      this.router.navigate(['/search'], { 
-        queryParams: { genres: selected.join(',') } 
+    if (this.selectedGenres.length > 0) {
+      this.router.navigate(['/search'], {
+        queryParams: { genres: this.selectedGenres.join(',') }
       });
     }
-    this.isGenreFilterOpen.set(false);
+    this.isGenreFilterOpen = false;
   }
 
   closeGenreDropdown() {
     setTimeout(() => {
-      this.isGenreFilterOpen.set(false);
+      this.isGenreFilterOpen = false;
     }, 150);
   }
 
   async performSearch(query: string) {
-    this.searchStatus.set('loading');
-    this.errorMessage.set('');
+    this.searchStatus = 'loading';
+    this.errorMessage = '';
 
     try {
       const encodedQuery = encodeURIComponent(query);
-      const url = `${API_BASE_URL}/games/search?query=${encodedQuery}`;
+      const url = `${environment.API_BASE_URL}/games/search?query=${encodedQuery}`;
 
       const response = await fetch(url);
 
@@ -176,41 +254,38 @@ export class Header implements OnDestroy, OnInit {
 
       const gamesWithFullUrl = results.map(game => ({
         ...game,
-        ImageUrl: game.ImageUrl ? `${API_BASE_URL}${game.ImageUrl}` : undefined
+        ImageUrl: game.ImageUrl ? `${environment.API_BASE_URL}${game.ImageUrl}` : undefined
       }));
 
-      this.searchResults.set(gamesWithFullUrl);
-      this.searchStatus.set('done');
+      this.searchResults = gamesWithFullUrl;
+      this.searchStatus = 'done';
 
     } catch (error) {
-      this.searchResults.set([]);
-      this.searchStatus.set('error');
-      this.errorMessage.set(error instanceof Error ? error.message : 'An unknown error occurred');
+      this.searchResults = [];
+      this.searchStatus = 'error';
+      this.errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     }
   }
 
   clearSearch() {
     this.searchControl.setValue('');
-    this.searchResults.set([]);
-    this.errorMessage.set('');
-    this.isSearchFocused.set(true);
+    this.searchResults = [];
+    this.errorMessage = '';
+    this.isSearchFocused = true;
   }
 
   onSearchBlur() {
     setTimeout(() => {
-      this.isSearchFocused.set(false);
+      this.isSearchFocused = false;
     }, 150);
   }
 
-onResultClick() {
-  // 1. ซ่อน Dropdown ทันที
-  this.isSearchFocused.set(false);
-  // 2. เคลียร์ช่องค้นหา (เพื่อให้ช่องค้นหาว่างเมื่อผู้ใช้กลับมาที่หน้านี้)
-  this.searchControl.setValue(''); 
-  // 3. เคลียร์ผลลัพธ์
-  this.searchResults.set([]);
-  this.searchStatus.set('idle');
-}
+  onResultClick() {
+    this.isSearchFocused = false;
+    this.searchControl.setValue('');
+    this.searchResults = [];
+    this.searchStatus = 'idle';
+  }
 
   onProfile() {
     this.router.navigate(['/profile']);
@@ -220,7 +295,7 @@ onResultClick() {
     (event as KeyboardEvent).preventDefault();
     const query = this.searchControl.value?.trim();
     if (query) {
-      this.isSearchFocused.set(false);
+      this.isSearchFocused = false;
       (event.target as HTMLInputElement).blur();
       this.router.navigate(['/search'], { queryParams: { q: query } });
     }

@@ -5,43 +5,60 @@
     <a href="#">About</a>
     <a href="#">Contact</a>
   </nav>
+
   <div class="header-tools">
-    @if (isAdmin()) {
+    <!-- Admin Tools -->
+    @if (isAdmin) {
     <a (click)="onViewUsers()" class="icon-link" title="View Users">
       <mat-icon>group</mat-icon>
     </a>
+    <a (click)="openCreateCouponModal()" class="icon-link" title="Create Coupon">
+      <mat-icon>add_card</mat-icon>
+    </a>
     }
+
+    <!-- Cart Button -->
+    <a [routerLink]="['/cart']" class="icon-link" title="Shopping Cart">
+      <mat-icon>shopping_cart</mat-icon>
+    </a>
+
+    <!-- Wallet Button -->
+    <a [routerLink]="['/wallet']" class="icon-link">
+      <mat-icon>account_balance_wallet</mat-icon>
+    </a>
+
+    <!-- Profile Button -->
+    <a (click)="onProfile()" class="icon-link">
+      <mat-icon>person</mat-icon>
+    </a>
 
     <!-- Genre Filter Button -->
     <div class="genre-filter-container">
       <button class="icon-link genre-btn" (click)="toggleGenreFilter()" title="Filter by Genre">
         <mat-icon>filter_list</mat-icon>
-        @if (selectedGenres().length > 0) {
-        <span class="genre-badge">{{ selectedGenres().length }}</span>
-        }
+        <span *ngIf="selectedGenres.length > 0" class="genre-badge">{{ selectedGenres.length }}</span>
       </button>
 
       <!-- Genre Filter Dropdown -->
-      @if (isGenreFilterOpen()) {
-      <div class="genre-dropdown" (blur)="closeGenreDropdown()">
+      <div *ngIf="isGenreFilterOpen" class="genre-dropdown" (blur)="closeGenreDropdown()">
         <div class="genre-dropdown-header">
           <h3>Filter by Genre</h3>
-          <button class="clear-btn" (click)="clearGenreFilter()" *ngIf="selectedGenres().length > 0">
+          <button class="clear-btn" (click)="clearGenreFilter()" *ngIf="selectedGenres.length > 0">
             Clear All
           </button>
         </div>
 
         <div class="genre-list">
           @for (genre of genres(); track genre.GenreID) {
-          <label class="genre-item">
-            <mat-checkbox [checked]="isGenreSelected(genre.GenreID)" (change)="toggleGenre(genre.GenreID)">
-              {{ genre.GenreName }}
-            </mat-checkbox>
-          </label>
-          }
-          @empty {
-          <div class="no-genres">No genres available</div>
-          }
+              <label class="genre-item">
+                <mat-checkbox [checked]="isGenreSelected(genre.GenreID)" (change)="toggleGenre(genre.GenreID)">
+                  {{ genre.GenreName }}
+                </mat-checkbox>
+              </label>
+            } @empty {
+              <!-- [FIX] Use signal genres() -->
+              <div class="no-genres">No genres available</div>
+            }
         </div>
 
         <div class="genre-dropdown-footer">
@@ -50,73 +67,155 @@
           </button>
         </div>
       </div>
-      }
     </div>
 
     <!-- Search Box -->
-    <div class="search-box" (focusin)="isSearchFocused.set(true)">
+    <div class="search-box" (focusin)="isSearchFocused = true">
       <mat-icon class="search-icon">search</mat-icon>
       <input type="text" placeholder="Search games..." [formControl]="searchControl" (blur)="onSearchBlur()"
-        (focus)="isSearchFocused.set(true)" (keydown.enter)="onEnterSearch($event)" />
+        (focus)="isSearchFocused = true" (keydown.enter)="onEnterSearch($event)" />
 
       <span class="clear-search" (click)="clearSearch()" *ngIf="searchControl.value">
         <mat-icon>close</mat-icon>
       </span>
 
-      @if (isSearchFocused() && searchControl.value) {
-      <div class="search-dropdown">
-        @if (searchStatus() === 'loading') {
-        <div class="search-status-item loading">
+      <div *ngIf="isSearchFocused && searchControl.value" class="search-dropdown">
+        <div *ngIf="searchStatus === 'loading'" class="search-status-item loading">
           <mat-icon class="loading-spinner">autorenew</mat-icon>
           <span>Searching...</span>
         </div>
-        }
-        @else if (searchStatus() === 'error') {
-        <div class="search-status-item error">
+
+        <div *ngIf="searchStatus === 'error'" class="search-status-item error">
           <mat-icon>error_outline</mat-icon>
-          <span>{{ errorMessage() || 'Failed to search' }}</span>
+          <span>{{ errorMessage || 'Failed to search' }}</span>
         </div>
-        }
-        @else if (searchResults().length > 0) {
-        <div class="search-results-header">
-          <span class="results-count">{{ searchResults().length }} results</span>
-        </div>
-@for (game of searchResults(); track game.GameID) {
-    <a class="result-item" 
-       [routerLink]="['/detail', game.GameID]" 
-       (click)="onResultClick()"> <div class="game-thumbnail-wrapper"> 
-            <img [src]="game.ImageUrl || 'https://placehold.co/80x80/1b2838/FFF?text=No+Image'" [alt]="game.Title"
+
+        <ng-container *ngIf="searchResults.length > 0">
+          <div class="search-results-header">
+            <span class="results-count">{{ searchResults.length }} results</span>
+          </div>
+
+          <a class="result-item" *ngFor="let game of searchResults" [routerLink]="['/detail', game.GameID]"
+            (click)="onResultClick()">
+            <div class="game-thumbnail-wrapper">
+              <img [src]="game.ImageUrl || 'https://placehold.co/80x80/1b2838/FFF?text=No+Image'" [alt]="game.Title"
                 class="game-thumbnail">
-        </div>
-        
-        <div class="game-info">
-            <span class="game-title">{{ game.Title }}</span>
-            <div class="game-meta">
-                <span class="game-price">{{ game.Price | currency: 'USD' }}</span>
             </div>
-        </div>
-    </a>
-}
-        }
-        @else if (searchStatus() === 'done' && searchResults().length === 0) {
-        <div class="search-status-item no-results">
+
+            <div class="game-info">
+              <span class="game-title">{{ game.Title }}</span>
+              <div class="game-meta">
+                <span class="game-price">{{ game.Price | currency: 'USD' }}</span>
+              </div>
+            </div>
+          </a>
+        </ng-container>
+
+        <div *ngIf="searchStatus === 'done' && searchResults.length === 0" class="search-status-item no-results">
           <mat-icon>search_off</mat-icon>
           <span>No results for "{{ searchControl.value }}"</span>
         </div>
-        }
       </div>
+    </div>
+  </div>
+</header>
+
+<!-- Create Coupon Modal -->
+@if (isCreateCouponModalVisible()) {
+<div class="modal-overlay coupon-modal-overlay" (click)="closeCreateCouponModal()">
+  <div class="modal-card coupon-modal-card" (click)="$event.stopPropagation()" [formGroup]="newCouponForm">
+    <div class="modal-header">
+      <h3 class="modal-title">Create New Coupon</h3>
+      <button class="close-button" (click)="closeCreateCouponModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Coupon Code -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Coupon Code</mat-label>
+        <input matInput formControlName="code" placeholder="e.g., SUMMER24" required minlength="4">
+        @if (newCouponForm.get('code')?.hasError('required') && newCouponForm.get('code')?.touched) {
+        <mat-error>Code is required.</mat-error>
+        }
+        @if (newCouponForm.get('code')?.hasError('minlength')) {
+        <mat-error>Code must be at least 4 characters.</mat-error>
+        }
+        @if (newCouponForm.get('code')?.hasError('pattern')) {
+        <mat-error>Code can only contain letters and numbers.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Discount Type & Value Row -->
+      <div class="form-row">
+        <!-- Discount Type -->
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Discount Type</mat-label>
+          <mat-select formControlName="discount_type" required>
+            <mat-option value="percentage">Percentage (%)</mat-option>
+            <mat-option value="fixed">Fixed Amount (THB)</mat-option>
+          </mat-select>
+          @if (newCouponForm.get('discount_type')?.hasError('required') && newCouponForm.get('discount_type')?.touched)
+          {
+          <mat-error>Type is required.</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Discount Value -->
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Value</mat-label>
+          <input matInput type="number" formControlName="discount_value" placeholder="e.g., 10" required min="0.01">
+          <span matTextSuffix>{{ newCouponForm.value.discount_type === 'percentage' ? '%' : 'THB' }}</span>
+          @if (newCouponForm.get('discount_value')?.hasError('required') &&
+          newCouponForm.get('discount_value')?.touched) {
+          <mat-error>Value is required.</mat-error>
+          }
+          @if (newCouponForm.get('discount_value')?.hasError('min')) {
+          <mat-error>Must be positive.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Expiry Date & Max Uses Row -->
+      <div class="form-row">
+        <!-- Expiry Date (Optional) -->
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Expiry Date (Optional)</mat-label>
+          <input matInput type="date" formControlName="expiry_date" [min]="todayDate">
+        </mat-form-field>
+
+        <!-- Max Uses (Optional) -->
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Max Uses (Optional)</mat-label>
+          <input matInput type="number" formControlName="max_uses" placeholder="Leave blank if unlimited" min="1">
+          @if (newCouponForm.get('max_uses')?.hasError('min')) {
+          <mat-error>Must be at least 1.</mat-error>
+          }
+          @if (newCouponForm.get('max_uses')?.hasError('pattern')) {
+          <mat-error>Must be a whole number.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Status/Error Message -->
+      @if (couponCreationStatus() === 'error' && couponCreationError()) {
+      <div class="modal-error-message">{{ couponCreationError() }}</div>
+      }
+      @if (couponCreationStatus() === 'success') {
+      <div class="modal-success-message">Coupon created successfully!</div>
       }
     </div>
 
-    <a href="#" class="icon-link">
-      <mat-icon>shopping_cart</mat-icon>
-    </a>
-
-    <a [routerLink]="['/wallet']" class="icon-link">
-      <mat-icon>account_balance_wallet</mat-icon>
-    </a>
-    <a (click)="onProfile()" class="icon-link">
-      <mat-icon>person</mat-icon>
-    </a>
+    <div class="modal-actions">
+      <button mat-stroked-button (click)="closeCreateCouponModal()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="handleCreateCouponSubmit()"
+        [disabled]="couponCreationStatus() === 'loading' || newCouponForm.invalid">
+        @if (couponCreationStatus() === 'loading') {
+        <span>Creating...</span>
+        } @else {
+        <span>Create Coupon</span>
+        }
+      </button>
+    </div>
   </div>
-</header>
+</div>
+}

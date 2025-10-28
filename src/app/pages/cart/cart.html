@@ -1,0 +1,142 @@
+<div class="cart-container">
+  <h2 class="title">Shopping Cart</h2>
+
+  <!-- Loading & Error States -->
+  @if (isLoading()) {
+    <div class="loading-state">Loading your cart...</div>
+  } @else if (error()) {
+    <div class="error-state">{{ error() }}</div>
+  } @else {
+    <div class="content">
+      <!-- Cart Items List -->
+      <div class="cart-list">
+        @for (item of cartItems(); track item.CartItemID) {
+          <div class="cart-item">
+            <img [src]="item.ImageUrl || 'https://placehold.co/160x105/eee/333?text=N/A'"
+                 [alt]="item.Title"
+                 class="item-image"
+                 onerror="this.src='https://placehold.co/160x105/eee/333?text=N/A'" />
+
+            <div class="item-info">
+              <h3>{{ item.Title }}</h3>
+              <p class="price">{{ item.Price | currency:'USD' }}</p>
+            </div>
+
+            <button class="delete-btn" (click)="removeItem(item)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        } @empty {
+          <div class="empty-cart-message">
+            Your cart is empty. Start adding some games!
+          </div>
+        }
+      </div>
+
+      <!-- Order Summary Box (Show only if cart has items) -->
+      @if (cartItems().length > 0) {
+        <div class="summary-box">
+          <h3>Order Summary</h3>
+
+          <!-- Cart Items Summary -->
+          @for (item of cartItems(); track item.CartItemID) {
+            <div class="summary-row item-line">
+              <span>{{ item.Title }}</span>
+              <span>{{ item.Price | currency:'USD' }}</span>
+            </div>
+          }
+
+          <div class="summary-divider"></div>
+
+          <!-- Coupon Section -->
+          <div class="coupon-section">
+            <input type="text"
+                   class="coupon-input"
+                   placeholder="Enter Coupon Code"
+                   [ngModel]="couponCodeInput()"
+                   (ngModelChange)="couponCodeInput.set($event)"
+                   (keyup.enter)="applyCoupon()"
+                   [disabled]="isApplyingCoupon() || appliedCoupon() !== null">
+            
+            @if (!appliedCoupon()) {
+              <button class="apply-coupon-btn" 
+                      (click)="applyCoupon()" 
+                      [disabled]="isApplyingCoupon() || !couponCodeInput()">
+                @if (isApplyingCoupon()) {
+                  <span>Applying...</span>
+                } @else {
+                  <span>Apply</span>
+                }
+              </button>
+            } @else {
+              <button class="remove-coupon-btn" (click)="removeCoupon()">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </div>
+
+          <!-- Coupon Error Message -->
+          @if (couponError()) {
+            <div class="coupon-error">{{ couponError() }}</div>
+          }
+
+          <!-- Coupon Success Message -->
+          @if (appliedCoupon()) {
+            <div class="coupon-success">Coupon applied successfully!</div>
+          }
+
+          <!-- Discount Display -->
+          @if (appliedCoupon(); as coupon) {
+            <div class="summary-divider short"></div>
+            <div class="discount-details">
+              <div class="summary-row discount-line">
+                <span>
+                  Discount ({{ coupon.couponCode }})
+                  @if (coupon.couponDetails.type === 'percentage') {
+                    <span class="discount-type">-{{ coupon.couponDetails.value }}%</span>
+                  } @else {
+                    <span class="discount-type">Fixed</span>
+                  }
+                </span>
+                <span class="discount-amount">-{{ coupon.discountAmount | currency:'USD' }}</span>
+              </div>
+            </div>
+          }
+
+          <div class="summary-divider"></div>
+
+          <!-- Total Price Section -->
+          @if (appliedCoupon()) {
+            <div class="summary-row total-line original-total">
+              <span>Original Total</span>
+              <span class="original-price">{{ originalTotalPrice() | currency:'USD' }}</span>
+            </div>
+            <div class="summary-row total-line final-total">
+              <span>Final Total</span>
+              <span class="final-price">{{ finalPrice() | currency:'USD' }}</span>
+            </div>
+          } @else {
+            <div class="summary-row total-line">
+              <span>Total</span>
+              <span class="total-price">{{ originalTotalPrice() | currency:'USD' }}</span>
+            </div>
+          }
+
+          <!-- Action Buttons -->
+          <button class="checkout-btn" 
+                  (click)="proceedToCheckout()" 
+                  [disabled]="isCheckingOut()">
+            @if (isCheckingOut()) {
+              <span>Processing...</span>
+            } @else {
+              <span>Proceed to Checkout</span>
+            }
+          </button>
+          <button class="continue-btn" (click)="continueShopping()">
+            Continue Shopping
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

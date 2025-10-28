@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 // Interface for user data from the API
 interface User {
@@ -34,7 +35,7 @@ interface DeleteConfirmPopup {
   styleUrls: ['./view-user.scss']
 })
 export class ViewUser implements OnInit {
-  private readonly API_BASE_URL = 'https://sqlserverwebgame-main.onrender.com';
+  private readonly API_BASE_URL = 'http://localhost:3000';
 
   // State Signals
   users = signal<User[]>([]);
@@ -100,7 +101,7 @@ export class ViewUser implements OnInit {
     this.deletePopup.update(p => ({ ...p, isDeleting: true }));
 
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/${user.id}`, {
+      const response = await fetch(`${environment.API_BASE_URL}/users/${user.id}`, {
         method: 'DELETE'
       });
       const result = await response.json();

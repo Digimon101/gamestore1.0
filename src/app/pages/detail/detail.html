@@ -1,28 +1,18 @@
 <div class="page-container">
-  @if (isLoading()) {
-    <div class="state-container"><h2>Loading Game Details...</h2></div>
-  }
-  @if (error()) {
-    <div class="state-container error">
-      <h2>Oops! Something went wrong.</h2>
-      <p>{{ error() }}</p>
-      <a class="btn btn-secondary" routerLink="/main">Back to Home</a>
-    </div>
-  }
+  <!-- Loading and Error States -->
+  @if (isLoading()) { <div class="state-container"><h2>Loading...</h2></div> }
+  @if (error()) { <div class="state-container error"><h2>Error</h2><p>{{ error() }}</p><a routerLink="/main">Back</a></div> }
 
   @if (game(); as currentGame) {
+    <!-- Removed header -->
     <main class="content-grid">
       <div class="left-column">
+        <!-- Game Banner -->
         <div class="game-banner">
-          @if(currentGame.ImageUrl){
-            <img [src]="currentGame.ImageUrl" [alt]="currentGame.Title + ' banner'">
-          } @else {
-            <div class="placeholder-banner">
-              <mat-icon>photo_camera</mat-icon>
-            </div>
-          }
+           @if(currentGame.ImageUrl){ <img [src]="currentGame.ImageUrl" [alt]="currentGame.Title + ' banner'"> }
+           @else { <div class="placeholder-banner"><mat-icon>photo_camera</mat-icon></div> }
         </div>
-
+        <!-- Main Info Card -->
         <div class="main-info-card">
           <h1>{{ currentGame.Title }}</h1>
           <div class="meta-info">
@@ -30,40 +20,55 @@
             <span class="meta-item"><mat-icon>event</mat-icon> Released: {{ currentGame.ReleaseDate | date:'longDate' }}</span>
           </div>
         </div>
-
+        <!-- Tabs Card -->
         <div class="tabs-card">
           <nav class="tab-nav">
-            <button [class.active]="activeTab === 'about'" (click)="selectTab('about')">About Game</button>
-            <button [class.active]="activeTab === 'system'" (click)="selectTab('system')">System Requirements</button>
-            <button [class.active]="activeTab === 'feature'" (click)="selectTab('feature')">Features</button>
+             <button [class.active]="activeTab === 'about'" (click)="selectTab('about')">About</button>
+             <button [class.active]="activeTab === 'system'" (click)="selectTab('system')">System</button>
+             <button [class.active]="activeTab === 'feature'" (click)="selectTab('feature')">Features</button>
           </nav>
           <div class="tab-content">
-            @if (activeTab === 'about') {
-              <p class="description">{{ currentGame.Description }}</p>
-            }
-            @if (activeTab === 'system') {
-              <p>System requirements are not available at this time.</p>
-            }
-            @if (activeTab === 'feature') {
-              <p>Key features are not available at this time.</p>
-            }
+            @if (activeTab === 'about') { <p class="description">{{ currentGame.Description }}</p> }
+            @if (activeTab === 'system') { <p>System requirements unavailable.</p> }
+            @if (activeTab === 'feature') { <p>Features unavailable.</p> }
           </div>
         </div>
       </div>
 
       <div class="right-column">
+        <!-- Purchase Card -->
         <div class="purchase-card">
           <div class="price-wrapper">
              <span class="price-label">Price</span>
-             <span class="price">{{ currentGame.Price > 0 ? (currentGame.Price | currency:'USD') : 'Free' }}</span>
+             <!-- [MODIFIED] Price display with promotion -->
+             <div class="price-display">
+                @if (currentGame.DiscountPercentage && currentGame.DiscountPercentage > 0) {
+                  <span class="original-price">{{ currentGame.Price | currency:'USD' }}</span>
+                  <span class="discounted-price">
+                    {{ calculateDiscountedPrice(currentGame.Price, currentGame.DiscountPercentage) | currency:'USD' }}
+                    <span class="discount-badge">{{ currentGame.DiscountPercentage }}% OFF</span>
+                  </span>
+                } @else {
+                  <span class="price">{{ currentGame.Price > 0 ? (currentGame.Price | currency:'USD') : 'Free' }}</span>
+                }
+             </div>
           </div>
           <div class="action-buttons">
+            <!-- [MODIFIED] Button Logic: In Library > In Cart > Add to Cart -->
             @if (isPurchased()) {
               <button class="btn btn-purchased" disabled>
                 <mat-icon>check_circle</mat-icon> In Library
               </button>
             } @else {
-              <button class="btn btn-primary" (click)="onPurchase()">Buy Now</button>
+              @if (isGameInCart(currentGame.GameID)) {
+                 <button class="btn btn-in-cart" disabled>
+                    <mat-icon>shopping_cart_checkout</mat-icon> In Cart
+                 </button>
+              } @else {
+                 <button class="btn btn-primary" (click)="addToCart()">
+                    <mat-icon>add_shopping_cart</mat-icon> Add to Cart
+                 </button>
+              }
             }
             <button class="btn btn-secondary">
               <mat-icon>favorite_border</mat-icon> Add to Wishlist
@@ -71,16 +76,27 @@
           </div>
         </div>
 
+        <!-- Top Seller Card -->
         <div class="top-seller-card">
           <h3>Top Sellers</h3>
           <ul class="top-seller-list">
+             <!-- Ensure using topSellers() signal -->
             @for (sellerGame of topSellers(); track sellerGame.GameID) {
               <li class="clickable-item" (click)="goToGameDetail(sellerGame.GameID)">
                 <img [src]="sellerGame.ImageUrl" [alt]="sellerGame.Title">
                 <span>{{ sellerGame.Title }}</span>
+                <!-- Optional: Display price here too -->
+                 <span class="seller-price">
+                   @if (sellerGame.DiscountPercentage && sellerGame.DiscountPercentage > 0) {
+                      <s>{{ sellerGame.Price | currency:'USD' }}</s>
+                      {{ calculateDiscountedPrice(sellerGame.Price, sellerGame.DiscountPercentage) | currency:'USD' }}
+                   } @else {
+                      {{ sellerGame.Price > 0 ? (sellerGame.Price | currency:'USD') : 'Free' }}
+                   }
+                 </span>
               </li>
             } @empty {
-              <p class="no-sellers">Could not load top sellers.</p>
+              <p class="no-sellers">Loading top sellers...</p>
             }
           </ul>
         </div>
@@ -89,24 +105,13 @@
   }
 </div>
 
-<!-- Custom Popup Card Section -->
-@if (isPopupVisible()) {
-<div class="popup-overlay" (click)="closePopup()">
-  <div class="popup-card" [class]="popupConfig().title.toLowerCase()" (click)="$event.stopPropagation()">
-    <div class="popup-header">
-      <h3>{{ popupConfig().title }}</h3>
-    </div>
-    <div class="popup-content">
-      <p>{{ popupConfig().message }}</p>
-    </div>
-    <div class="popup-actions">
-      @if (popupConfig().showConfirmButton) {
-      <button class="btn btn-secondary" (click)="closePopup()">Cancel</button>
-      <button class="btn btn-primary" (click)="handlePurchaseConfirmation()">Confirm</button>
-      } @else {
-      <button class="btn btn-primary" (click)="closePopup()">OK</button>
-      }
-    </div>
+<!-- [NEW] Simple Notification Popup (Copied from main.html) -->
+@if (isNotificationVisible()) {
+  <div class="notification-popup">
+    <mat-icon>{{ notificationIcon() }}</mat-icon>
+    <span>{{ notificationMessage() }}</span>
   </div>
-</div>
 }
+
+<!-- [REMOVED] Old Purchase Confirmation Popup -->
+

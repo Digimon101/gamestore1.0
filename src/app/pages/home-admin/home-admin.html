@@ -9,10 +9,11 @@
     </div>
   </header>
 
+  <!-- Top Sellers Section -->
   <section class="game-section top-seller">
     <div class="section-header">
         <h2 class="section-title">Top Sellers</h2>
-        <a href="#" class="view-all-link">View All</a>
+        <!-- <a href="#" class="view-all-link">View All</a> -->
     </div>
     <div class="carousel-wrapper">
       <div class="carousel-container">
@@ -20,7 +21,7 @@
           <mat-icon>chevron_left</mat-icon>
         </button>
         <div class="game-grid" #topSellerScroll (scroll)="onScroll()">
-          @for (game of topSellerGames(); track game.GameID) {
+          @for (game of actualTopSellerGames(); track game.GameID) {
             <div class="game-card">
               <div class="card-image">
                 @if (game.ImageUrl) {
@@ -31,7 +32,19 @@
               </div>
               <div class="card-content">
                 <h3 class="game-title">{{ game.Title }}</h3>
-                <p class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</p>
+                <div class="price-container">
+                  @if (game.DiscountPercentage && game.DiscountPercentage > 0) {
+                    <span class="original-price">{{ game.Price | currency: 'USD' }}</span>
+                    <span class="discounted-price">
+                      {{ calculateDiscountedPrice(game.Price, game.DiscountPercentage) | currency: 'USD' }}
+                      <span class="discount-badge">{{ game.DiscountPercentage }}% OFF</span>
+                    </span>
+                  } @else {
+                    <span class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
+                  }
+                </div>
+                <!-- Optional: Display purchase count for admin? -->
+                <!-- <p class="purchase-count">Sold: {{ game.purchase_count }}</p> -->
               </div>
               <div class="card-footer">
                 <button mat-stroked-button color="primary" class="edit-button" (click)="onEditGame(game.GameID)">
@@ -40,7 +53,7 @@
               </div>
             </div>
           } @empty {
-            <div class="empty-state"><mat-icon>hourglass_empty</mat-icon><p>Loading games...</p></div>
+            <div class="empty-state"><mat-icon>hourglass_empty</mat-icon><p>Loading top sellers...</p></div>
           }
         </div>
         <button mat-icon-button class="nav-button nav-right" (click)="scrollRight()">
@@ -55,33 +68,45 @@
     </div>
   </section>
 
-  <section class="game-section popular">
+  <!-- All Games Section -->
+  <section class="game-section popular"> <!-- Assuming 'popular' class defines grid layout -->
      <div class="section-header">
         <h2 class="section-title">All Games</h2>
-        <a href="#" class="view-all-link">View All</a>
-    </div>
-    <div class="game-grid">
-      @for (game of popularGames(); track game.GameID) {
+        <!-- <a href="#" class="view-all-link">View All</a> -->
+     </div>
+    <div class="game-grid"> <!-- Use the same grid class -->
+      @for (game of popularGames(); track game.GameID) { <!-- Use popularGames (all remaining) -->
         <div class="game-card">
            <div class="card-image">
-                @if (game.ImageUrl) {
-                  <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
-                } @else {
-                  <div class="placeholder-image"><mat-icon>photo_camera</mat-icon></div>
-                }
+              @if (game.ImageUrl) {
+                <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
+              } @else {
+                <div class="placeholder-image"><mat-icon>photo_camera</mat-icon></div>
+              }
+            </div>
+            <div class="card-content">
+              <h3 class="game-title">{{ game.Title }}</h3>
+              <!-- [MODIFIED] Price Display Logic (Repeated for consistency) -->
+              <div class="price-container">
+                 @if (game.DiscountPercentage && game.DiscountPercentage > 0) {
+                    <span class="original-price">{{ game.Price | currency: 'USD' }}</span>
+                    <span class="discounted-price">
+                      {{ calculateDiscountedPrice(game.Price, game.DiscountPercentage) | currency: 'USD' }}
+                      <span class="discount-badge">{{ game.DiscountPercentage }}% OFF</span>
+                    </span>
+                  } @else {
+                    <span class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
+                  }
               </div>
-              <div class="card-content">
-                <h3 class="game-title">{{ game.Title }}</h3>
-                <p class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</p>
-              </div>
-              <div class="card-footer">
-                <button mat-stroked-button color="primary" class="edit-button" (click)="onEditGame(game.GameID)">
-                  <mat-icon>edit</mat-icon> Edit
-                </button>
-              </div>
+            </div>
+            <div class="card-footer">
+              <button mat-stroked-button color="primary" class="edit-button" (click)="onEditGame(game.GameID)">
+                <mat-icon>edit</mat-icon> Edit
+              </button>
+            </div>
         </div>
       } @empty {
-        <div class="empty-state"><mat-icon>hourglass_empty</mat-icon><p>Loading games...</p></div>
+        <div class="empty-state"><mat-icon>hourglass_empty</mat-icon><p>No games found or still loading...</p></div>
       }
     </div>
   </section>

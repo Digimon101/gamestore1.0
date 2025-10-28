@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
+import { environment } from '../../environments/environment';
 
 interface Genre {
     GenreID: number;
@@ -32,7 +33,7 @@ interface Genre {
 })
 export class Addgame implements OnInit { // ใช้ชื่อ class 'Addgame' ตามที่ร้องขอ
     // แก้ไข: ย้าย API_BASE_URL เข้ามาเป็น property ของ class
-    private readonly API_BASE_URL = 'https://sqlserverwebgame-main.onrender.com';
+    private readonly API_BASE_URL = 'http://localhost:3000';
     
     @ViewChild('fileInput') fileInput!: ElementRef; // อ้างอิงถึง input type="file" ใน HTML
 
@@ -65,7 +66,7 @@ export class Addgame implements OnInit { // ใช้ชื่อ class 'Addgame
     // ดึงข้อมูลประเภทเกมจาก Server (ต้องมี endpoint POST /genres)
     async fetchGenres() {
         // แก้ไข: ใช้ this.API_BASE_URL
-        const apiUrl = `${this.API_BASE_URL}/genres`; 
+        const apiUrl = `${environment.API_BASE_URL}/genres`; 
         try {
             const response = await fetch(apiUrl);
             if (!response.ok) {
@@ -114,7 +115,7 @@ export class Addgame implements OnInit { // ใช้ชื่อ class 'Addgame
         console.log('Sending FormData to server...');
         
         try {
-            const response = await fetch(`${this.API_BASE_URL}/games`, {
+            const response = await fetch(`${environment.API_BASE_URL}/games`, {
                 method: 'POST',
                 // *** ไม่ต้องใส่ Content-Type: multipart/form-data ให้ Browser จัดการเอง ***
                 body: formData

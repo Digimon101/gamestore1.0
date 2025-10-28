@@ -3,17 +3,18 @@
     <div class="profile-layout">
 
         <div class="profile-info-column">
+            <!-- ... Profile info ... -->
             <div class="avatar-section">
                 <div class="avatar-wrapper">
                     @if (nonNullUser.image) {
-                    <img [src]="'https://sqlserverwebgame-main.onrender.com' + nonNullUser.image.replace('/uploads/profile', '/profile')"
+                    <img [src]="'http://localhost:3000' + nonNullUser.image.replace('/uploads/profile', '/profile')"
                         class="profile-avatar" alt="Profile Image" />
+                    } @else {
                     <mat-icon class="default-avatar-icon">person</mat-icon>
                     }
                 </div>
                 <h2 class="display-name">{{ nonNullUser.name }}</h2>
             </div>
-
             <div class="details-group">
                 <div class="contact-detail">
                     <mat-icon class="detail-icon">email</mat-icon>
@@ -28,23 +29,19 @@
                     <p>User ID: {{ nonNullUser.id }}</p>
                 </div>
             </div>
-
             <div class="action-buttons">
                 <button (click)="onEdit()" mat-stroked-button class="edit-btn">
-                    <mat-icon>edit</mat-icon>
-                    Edit Profile
+                    <mat-icon>edit</mat-icon> Edit Profile
                 </button>
                 <button (click)="onSignOut()" mat-stroked-button color="warn" class="signout-btn">
-                    <mat-icon>logout</mat-icon>
-                    Sign Out
+                    <mat-icon>logout</mat-icon> Sign Out
                 </button>
             </div>
         </div>
 
         <div class="my-library-column">
             <h2 class="library-title">
-                <mat-icon class="library-icon">library_books</mat-icon>
-                My Library
+                <mat-icon class="library-icon">library_books</mat-icon> My Library
             </h2>
 
             <div class="game-item-list">
@@ -59,7 +56,8 @@
                 </div>
                 } @else {
                 @for (game of userGames(); track game.GameID) {
-                <div class="game-item">
+                <!-- [MODIFIED] Added click handler and class -->
+                <div class="game-item clickable-item" (click)="viewGameDetails(game.GameID)">
                     <div class="game-image-wrapper">
                         @if (game.ImageUrl) {
                         <img [src]="game.ImageUrl" [alt]="game.Title">
@@ -70,7 +68,8 @@
                     <div class="game-details">
                         <p class="game-title">{{ game.Title }}</p>
                     </div>
-                    <button mat-flat-button color="primary" class="download-button" (click)="onDownload(game)">
+                    <!-- [MODIFIED] Stop propagation on download button -->
+                    <button mat-flat-button color="primary" class="download-button" (click)="onDownload(game); $event.stopPropagation()">
                         <mat-icon>download</mat-icon>
                         <span>Download</span>
                     </button>
@@ -91,3 +90,4 @@
     </div>
     }
 </main>
+

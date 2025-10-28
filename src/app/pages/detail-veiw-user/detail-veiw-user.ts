@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs'; // For tabs
+import { environment } from '../../environments/environment';
 
 // Interfaces to match backend response
 interface UserDetails {
@@ -47,7 +48,7 @@ interface FullUserDetails {
   styleUrls: ['./detail-veiw-user.scss']
 })
 export class DetailViewUser implements OnInit {
-  private readonly API_BASE_URL = 'https://sqlserverwebgame-main.onrender.com';
+  private readonly API_BASE_URL = 'http://localhost:3000';
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -70,7 +71,7 @@ export class DetailViewUser implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
     try {
-      const response = await fetch(`${this.API_BASE_URL}/users/details/${userId}`);
+      const response = await fetch(`${environment.API_BASE_URL}/users/details/${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch user details.');
       }
@@ -81,11 +82,11 @@ export class DetailViewUser implements OnInit {
         ...data,
         user: {
             ...data.user,
-            image: data.user.image ? `${this.API_BASE_URL}${data.user.image}` : null
+            image: data.user.image ? `${environment.API_BASE_URL}${data.user.image}` : null
         },
         purchaseHistory: data.purchaseHistory.map(item => ({
             ...item,
-            ImageUrl: item.ImageUrl ? `${this.API_BASE_URL}${item.ImageUrl}` : null
+            ImageUrl: item.ImageUrl ? `${environment.API_BASE_URL}${item.ImageUrl}` : null
         }))
       };
 

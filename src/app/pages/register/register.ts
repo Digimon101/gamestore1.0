@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environments/environment'; // <-- [NEW] Import environment
 
 @Component({
   selector: 'app-register',
@@ -44,24 +45,29 @@ export class Register {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
-    }, { 
-      validators: this.passwordMatchValidator 
+    }, {
+      validators: this.passwordMatchValidator
     });
   }
 
-  // ตรวจสอบว่า password ตรงกับ confirmPassword หรือไม่
+  // Password match validator
   passwordMatchValidator(form: FormGroup) {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
-    
+
     if (password && confirmPassword && password.value !== confirmPassword.value) {
       confirmPassword.setErrors({ passwordMismatch: true });
       return { passwordMismatch: true };
     }
+    // Clear the error if passwords match
+    if (confirmPassword?.hasError('passwordMismatch')) {
+        confirmPassword.setErrors(null);
+    }
     return null;
   }
 
-  // ฟังก์ชันสมัครสมาชิก
+
+  // Register function
   onRegister() {
     if (this.registerForm.invalid) {
       this.showError('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
@@ -74,14 +80,16 @@ export class Register {
     const { name, email, password } = this.registerForm.value;
     const registerData = { name, email, password };
 
-    // เรียก API backend - เปลี่ยน URL ให้ตรงกับ backend ของคุณ
-    this.http.post('https://sqlserverwebgame-main.onrender.com/register', registerData)
+    // [MODIFIED] Use environment variable for the API URL
+    const apiUrl = `${environment.API_BASE_URL}/register`;
+
+    this.http.post(apiUrl, registerData) // <-- Use apiUrl here
       .subscribe({
         next: (response: any) => {
           this.isLoading = false;
           this.showSuccess(response.message || 'สมัครสมาชิกสำเร็จ');
-          
-          // ไปหน้า login หลังสมัครสำเร็จ
+
+          // Navigate to login after success
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 1500);
@@ -95,12 +103,12 @@ export class Register {
       });
   }
 
-  // ฟังก์ชันไปหน้า Login (แก้ไขจาก onSingOut)
+  // Navigate to Login page
   goToLogin() {
     this.router.navigate(['/login']);
   }
 
-  // แสดงข้อความสำเร็จ
+  // Show success snackbar
   showSuccess(message: string) {
     this.snackBar.open(message, 'ปิด', {
       duration: 3000,
@@ -110,7 +118,7 @@ export class Register {
     });
   }
 
-  // แสดงข้อความผิดพลาด
+  // Show error snackbar
   showError(message: string) {
     this.snackBar.open(message, 'ปิด', {
       duration: 3000,
@@ -120,36 +128,38 @@ export class Register {
     });
   }
 
-  // Helper method เพื่อ mark ทุก field ว่า touched
+  // Helper method to mark all fields as touched
   markFormGroupTouched(formGroup: FormGroup) {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      }
-    });
+    Object.values(formGroup.controls).forEach(control => {
+       control.markAsTouched();
+       if (control instanceof FormGroup) {
+         this.markFormGroupTouched(control);
+       }
+     });
   }
 
-  // Helper methods สำหรับแสดง error messages
+
+  // Helper methods for displaying error messages in the template
   getErrorMessage(fieldName: string): string {
     const field = this.registerForm.get(fieldName);
-    
-    if (field?.hasError('required')) {
+
+    if (!field || !field.touched) {
+        return ''; // Don't show errors until touched
+    }
+    if (field.hasError('required')) {
       return 'กรุณากรอกข้อมูล';
     }
-    if (field?.hasError('email')) {
+    if (field.hasError('email')) {
       return 'รูปแบบอีเมลไม่ถูกต้อง';
     }
-    if (field?.hasError('minlength')) {
+    if (field.hasError('minlength')) {
       const minLength = field.errors?.['minlength'].requiredLength;
       return `ต้องมีอย่างน้อย ${minLength} ตัวอักษร`;
     }
-    if (fieldName === 'confirmPassword' && field?.hasError('passwordMismatch')) {
+    if (fieldName === 'confirmPassword' && field.hasError('passwordMismatch')) {
       return 'รหัสผ่านไม่ตรงกัน';
     }
-    
+
     return '';
   }
 }

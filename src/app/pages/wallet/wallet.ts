@@ -3,7 +3,7 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { MatIconModule } from '@angular/material/icon';
-
+import { environment } from '../../environments/environment';
 // --- Interface for history items ---
 interface TopupHistoryItem {
   id: number;
@@ -29,11 +29,11 @@ interface User {
   selector: 'app-wallet',
   standalone: true,
   imports: [CommonModule, CurrencyPipe, FormsModule,MatIconModule], // Add FormsModule
-  templateUrl: './wallet.html',
+  templateUrl: './wallet.html', 
   styleUrl: './wallet.scss'
 })
 export class Wallet implements OnInit {
-  private readonly API_BASE_URL = 'https://sqlserverwebgame-main.onrender.com';
+  private readonly API_BASE_URL = 'http://localhost:3000';
   private router = inject(Router);
 
   currentUser = signal<User | null>(null);
@@ -80,7 +80,7 @@ export class Wallet implements OnInit {
   async fetchWalletData(userId: string) {
     this.isLoading.set(true);
     try {
-      const response = await fetch(`${this.API_BASE_URL}/wallet/${userId}`);
+      const response = await fetch(`${environment.API_BASE_URL}/wallet/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch wallet data.');
       const data: User = await response.json();
       this.currentUser.set(data);
@@ -96,7 +96,7 @@ export class Wallet implements OnInit {
   async fetchTopupHistory(userId: string) {
     this.isHistoryLoading.set(true);
     try {
-      const response = await fetch(`${this.API_BASE_URL}/wallet/history/${userId}`);
+      const response = await fetch(`${environment.API_BASE_URL}/wallet/history/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch history.');
       const history: TopupHistoryItem[] = await response.json();
       this.topupHistory.set(history);
@@ -110,7 +110,7 @@ export class Wallet implements OnInit {
   async fetchPurchaseHistory(userId: string) {
     this.isPurchaseHistoryLoading.set(true);
     try {
-      const response = await fetch(`${this.API_BASE_URL}/wallet/purchase-history/${userId}`);
+      const response = await fetch(`${environment.API_BASE_URL}/wallet/purchase-history/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch purchase history.');
 
       const history: PurchaseHistoryItem[] = await response.json();
@@ -118,7 +118,7 @@ export class Wallet implements OnInit {
       // Process image URLs
       const processedHistory = history.map(item => ({
         ...item,
-        ImageUrl: item.ImageUrl ? `${this.API_BASE_URL}${item.ImageUrl}` : null
+        ImageUrl: item.ImageUrl ? `${environment.API_BASE_URL}${item.ImageUrl}` : null
       }));
 
       this.purchaseHistory.set(processedHistory);
@@ -144,7 +144,7 @@ export class Wallet implements OnInit {
 
     this.isUpdatingBalance.set(true);
     try {
-      const response = await fetch(`${this.API_BASE_URL}/wallet/${user.id}`, {
+      const response = await fetch(`${environment.API_BASE_URL}/wallet/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),

@@ -1,17 +1,23 @@
 <div class="home-container">
+  <!-- Top Seller Section -->
   <section class="game-section top-seller">
     <div class="section-header">
       <h2 class="section-title">Top Seller</h2>
-      <button mat-button class="view-all-btn">View All <mat-icon>arrow_forward</mat-icon></button>
+      <button mat-button class="view-all-btn">
+        View All <mat-icon>arrow_forward</mat-icon>
+      </button>
     </div>
 
     <div class="carousel-wrapper">
       <div class="carousel-container">
+        <!-- Left Navigation Button -->
         <button mat-icon-button class="nav-button nav-left" (click)="scrollLeft()">
           <mat-icon>chevron_left</mat-icon>
         </button>
+
+        <!-- Game Grid / Carousel -->
         <div class="game-grid" #topSellerScroll (scroll)="onScroll()">
-          @for (game of topSellerGames(); track game.GameID) {
+          @for (game of actualTopSellerGames(); track game.GameID) {
             <div class="game-card clickable" (click)="viewGameDetails(game)">
               <div class="card-image">
                 @if (game.ImageUrl) {
@@ -27,18 +33,35 @@
                 <p class="game-description">
                   {{ (game.Description || '').length > 80 ? (game.Description || '').substring(0, 80) + '...' : game.Description }}
                 </p>
-                <div class="card-footer">
-                  <span class="price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
-                  @if (isGamePurchased(game.GameID)) {
-                    <button mat-stroked-button class="owned-button" disabled>
-                      <mat-icon>check</mat-icon> In Library
-                    </button>
+                <div class="price-container">
+                  @if (game.DiscountPercentage && game.DiscountPercentage > 0) {
+                    <span class="original-price">{{ game.Price | currency: 'USD' }}</span>
+                    <span class="discounted-price">
+                      {{ calculateDiscountedPrice(game.Price, game.DiscountPercentage) | currency: 'USD' }}
+                      <span class="discount-badge">{{ game.DiscountPercentage }}% OFF</span>
+                    </span>
                   } @else {
-                    <button mat-raised-button color="primary" class="buy-button" (click)="onBuyGame(game); $event.stopPropagation()">
-                      <mat-icon>shopping_cart</mat-icon> Buy
-                    </button>
+                    <span class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
                   }
                 </div>
+              </div>
+              <div class="card-footer">
+                @if (isGamePurchased(game.GameID)) {
+                  <button mat-stroked-button class="owned-button" disabled>
+                    <mat-icon>check</mat-icon> In Library
+                  </button>
+                } @else {
+                  @if (isGameInCart(game.GameID)) {
+                    <button mat-stroked-button class="in-cart-button" disabled>
+                      <mat-icon>shopping_cart_checkout</mat-icon> In Cart
+                    </button>
+                  } @else {
+                    <button mat-raised-button color="primary" class="add-to-cart-button"
+                            (click)="addToCart(game); $event.stopPropagation()">
+                      <mat-icon>add_shopping_cart</mat-icon> Add to Cart
+                    </button>
+                  }
+                }
               </div>
             </div>
           } @empty {
@@ -48,55 +71,90 @@
             </div>
           }
         </div>
+
+        <!-- Right Navigation Button -->
         <button mat-icon-button class="nav-button nav-right" (click)="scrollRight()">
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
+
+      <!-- Carousel Dots Navigation -->
       <div class="carousel-dots">
-          @for (dot of carouselDots(); track $index) {
-            <button class="dot"
-                    [class.active]="$index === currentDotIndex()"
-                    (click)="scrollToPage($index)">
-            </button>
-          }
+        @for (dot of carouselDots(); track $index) {
+          <button class="dot" 
+                  [class.active]="$index === currentDotIndex()" 
+                  (click)="scrollToPage($index)">
+          </button>
+        }
       </div>
     </div>
   </section>
 
+  <!-- Popular Section -->
   <section class="game-section popular">
     <div class="section-header">
       <h2 class="section-title">Popular</h2>
-      <button mat-button class="view-all-btn">View All <mat-icon>arrow_forward</mat-icon></button>
+      <button mat-button class="view-all-btn">
+        View All <mat-icon>arrow_forward</mat-icon>
+      </button>
     </div>
+
     <div class="game-grid">
       @for (game of popularGames(); track game.GameID) {
         <div class="game-card clickable" (click)="viewGameDetails(game)">
+          <!-- Card Image -->
           <div class="card-image">
-             @if (game.ImageUrl) {
-                <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
-             } @else {
-                <div class="placeholder-image">
-                    <mat-icon>photo_camera</mat-icon>
-                </div>
-             }
+            @if (game.ImageUrl) {
+              <img [src]="game.ImageUrl" [alt]="game.Title" class="game-image">
+            } @else {
+              <div class="placeholder-image">
+                <mat-icon>photo_camera</mat-icon>
+              </div>
+            }
           </div>
+
+          <!-- Card Content -->
           <div class="card-content">
             <h3 class="game-title">{{ game.Title }}</h3>
-             <p class="game-description">
-               {{ (game.Description || '').length > 80 ? (game.Description || '').substring(0, 80) + '...' : game.Description }}
+            <p class="game-description">
+              {{ (game.Description || '').length > 80 ? (game.Description || '').substring(0, 80) + '...' : game.Description }}
             </p>
-            <div class="card-footer">
-               <span class="price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
-              @if (isGamePurchased(game.GameID)) {
-                <button mat-stroked-button class="owned-button" disabled>
-                  <mat-icon>check</mat-icon> In Library
-                </button>
+
+            <!-- Price Display with Discount Support -->
+            <div class="price-container">
+              @if (game.DiscountPercentage && game.DiscountPercentage > 0) {
+                <span class="original-price">{{ game.Price | currency: 'USD' }}</span>
+                <span class="discounted-price">
+                  {{ calculateDiscountedPrice(game.Price, game.DiscountPercentage) | currency: 'USD' }}
+                  <span class="discount-badge">{{ game.DiscountPercentage }}% OFF</span>
+                </span>
               } @else {
-                <button mat-raised-button color="primary" class="buy-button" (click)="onBuyGame(game); $event.stopPropagation()">
-                  <mat-icon>shopping_cart</mat-icon> Buy
-                </button>
+                <span class="game-price">{{ game.Price > 0 ? (game.Price | currency: 'USD') : 'Free' }}</span>
               }
             </div>
+          </div>
+
+          <!-- Card Footer with Action Buttons -->
+          <div class="card-footer">
+            @if (isGamePurchased(game.GameID)) {
+              <!-- Game Already Owned -->
+              <button mat-stroked-button class="owned-button" disabled>
+                <mat-icon>check</mat-icon> In Library
+              </button>
+            } @else {
+              @if (isGameInCart(game.GameID)) {
+                <!-- Game in Cart -->
+                <button mat-stroked-button class="in-cart-button" disabled>
+                  <mat-icon>shopping_cart_checkout</mat-icon> In Cart
+                </button>
+              } @else {
+                <!-- Add to Cart -->
+                <button mat-raised-button color="primary" class="add-to-cart-button"
+                        (click)="addToCart(game); $event.stopPropagation()">
+                  <mat-icon>add_shopping_cart</mat-icon> Add to Cart
+                </button>
+              }
+            }
           </div>
         </div>
       } @empty {
@@ -109,28 +167,10 @@
   </section>
 </div>
 
-
-<!-- [NEW] Custom Popup Card Section -->
-@if (isPopupVisible()) {
-  <div class="popup-overlay" (click)="closePopup()">
-    <div class="popup-card" [ngClass]="popupConfig().title.toLowerCase()" (click)="$event.stopPropagation()">
-      <div class="popup-header">
-        <h3 class="popup-title">{{ popupConfig().title }}</h3>
-        <button class="close-button" (click)="closePopup()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <div class="popup-content">
-        <p>{{ popupConfig().message }}</p>
-      </div>
-      <div class="popup-actions">
-        @if (popupConfig().showConfirmButton) {
-          <button mat-stroked-button color="warn" (click)="closePopup()">Cancel</button>
-          <button mat-raised-button color="primary" (click)="handlePurchaseConfirmation()">Confirm</button>
-        } @else {
-          <button mat-raised-button color="primary" (click)="closePopup()">OK</button>
-        }
-      </div>
-    </div>
+<!-- Notification Popup -->
+@if (isNotificationVisible()) {
+  <div class="notification-popup">
+    <mat-icon>{{ notificationIcon() }}</mat-icon>
+    <span>{{ notificationMessage() }}</span>
   </div>
 }
