@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 
-// Interface matching the items returned by GET /cart/:userId API endpoint
+// --- Interfaces ---
 interface CartItem {
   CartItemID: number;
   GameID: number;
@@ -22,7 +22,6 @@ interface User {
   type: number;
 }
 
-// Interface for the response from the applyCoupon API
 interface ApplyCouponResponse {
   message: string;
   couponCode: string;
@@ -35,6 +34,7 @@ interface ApplyCouponResponse {
   };
 }
 
+// --- Component ---
 @Component({
   selector: 'app-cart',
   standalone: true,
@@ -43,24 +43,26 @@ interface ApplyCouponResponse {
   styleUrls: ['./cart.scss']
 })
 export class Cart implements OnInit {
-  private readonly API_BASE_URL = 'http://localhost:3000';
   private readonly CART_STORAGE_KEY = 'shopping_cart';
   private router = inject(Router);
 
-  // Cart Signals
+  // --- State Signals ---
   cartItems = signal<CartItem[]>([]);
   isLoading = signal<boolean>(true);
-  error = signal<string | null>(null);
-  currentUser = signal<User | null>(null);
   isCheckingOut = signal<boolean>(false);
+  currentUser = signal<User | null>(null);
 
-  // Coupon Signals
+  // --- Feedback Signals ---
+  error = signal<string | null>(null); // For general page errors
+  successMessage = signal<string | null>(null); // For checkout success
+
+  // --- Coupon Signals ---
   couponCodeInput = signal<string>('');
   appliedCoupon = signal<ApplyCouponResponse | null>(null);
-  couponError = signal<string | null>(null);
+  couponError = signal<string | null>(null); // For coupon-specific errors
   isApplyingCoupon = signal<boolean>(false);
 
-  // Computed Prices
+  // --- Computed Signals ---
   originalTotalPrice = computed(() => {
     return this.cartItems().reduce((total, item) => total + (item.Price * item.quantity), 0);
   });
@@ -74,7 +76,9 @@ export class Cart implements OnInit {
     this.loadInitialData();
   }
 
+  // --- Initialization ---
   async loadInitialData() {
+    this.isLoading.set(true);
     const userStr = localStorage.getItem('user');
     if (!userStr) {
       this.error.set("Please log in to view your cart.");
@@ -100,29 +104,26 @@ export class Cart implements OnInit {
     }
   }
 
+  // --- API: Fetch Cart ---
   async fetchCartItems(userId: number) {
     this.isLoading.set(true);
-    this.error.set(null);
+    this.clearAllFeedback(); // Clear all old messages
     const apiUrl = `${environment.API_BASE_URL}/cart/${userId}`;
-
-    // Clear applied coupon when reloading cart
-    this.appliedCoupon.set(null);
-    this.couponCodeInput.set('');
-    this.couponError.set(null);
 
     try {
       const response = await fetch(apiUrl);
+
       if (!response.ok) {
-        if (response.status === 404) {
+        if (response.status === 404) { // 404 is not an error, just empty cart
           this.cartItems.set([]);
           this.updateLocalStorage([]);
           return;
         }
-        throw new Error(`Failed to fetch cart items: ${response.statusText}`);
+        // Try to parse error message from backend
+        await this.throwBackendError(response, 'Failed to fetch cart');
       }
 
       const items: CartItem[] = await response.json();
-
       const processedItems = items.map(item => ({
         ...item,
         ImageUrl: item.ImageUrl ? `${environment.API_BASE_URL}${item.ImageUrl}` : null
@@ -131,100 +132,22 @@ export class Cart implements OnInit {
       this.cartItems.set(processedItems);
       this.updateLocalStorage(processedItems);
 
-    } catch (err) {
-      console.error('Error fetching cart:', err);
-      this.error.set(err instanceof Error ? err.message : 'Could not load cart data.');
-      this.cartItems.set([]);
+    } catch (err: unknown) {
+      this.handleApiError(err, 'Could not load cart data.');
+      this.cartItems.set([]); // Ensure cart is empty on failure
       this.updateLocalStorage([]);
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  private updateLocalStorage(items: CartItem[]): void {
-    const localCartItems = items.map(item => ({
-      id: item.GameID,
-      name: item.Title,
-      price: item.Price,
-      quantity: item.quantity,
-      imageUrl: item.ImageUrl
-    }));
-    localStorage.setItem(this.CART_STORAGE_KEY, JSON.stringify(localCartItems));
-    
-    // Trigger storage event for other components
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: this.CART_STORAGE_KEY,
-      newValue: JSON.stringify(localCartItems),
-      url: window.location.href
-    }));
-    console.log('🔄 localStorage updated:', localCartItems);
-  }
-
-  async updateQuantity(item: CartItem, change: number) {
-    const newQuantity = item.quantity + change;
-    if (newQuantity < 0) return;
-
-    const user = this.currentUser();
-    if (!user) return;
-
-    const apiUrl = `${environment.API_BASE_URL}/cart/${item.CartItemID}`;
-
-    // Clear applied coupon when cart changes
-    this.appliedCoupon.set(null);
-    this.couponCodeInput.set('');
-    this.couponError.set(null);
-
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, quantity: newQuantity })
-      });
-
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.message || 'Failed to update quantity.');
-      }
-
-      if (newQuantity === 0) {
-        this.cartItems.update(items => {
-          const updatedItems = items.filter(i => i.CartItemID !== item.CartItemID);
-          this.updateLocalStorage(updatedItems);
-          return updatedItems;
-        });
-      } else {
-        this.cartItems.update(items => {
-          const updatedItems = items.map(i => 
-            i.CartItemID === item.CartItemID ? { ...i, quantity: newQuantity } : i
-          );
-          this.updateLocalStorage(updatedItems);
-          return updatedItems;
-        });
-      }
-    } catch (err) {
-      console.error('Error updating quantity:', err);
-      alert(err instanceof Error ? err.message : 'Could not update item quantity.');
-    }
-  }
-
-  increaseQuantity(item: CartItem): void {
-    this.updateQuantity(item, 1);
-  }
-
-  decreaseQuantity(item: CartItem): void {
-    this.updateQuantity(item, -1);
-  }
-
+  // --- API: Remove Item ---
   async removeItem(item: CartItem): Promise<void> {
     const user = this.currentUser();
     if (!user) return;
 
+    this.clearAllFeedback();
     const apiUrl = `${environment.API_BASE_URL}/cart/${item.CartItemID}`;
-
-    // Clear applied coupon when cart changes
-    this.appliedCoupon.set(null);
-    this.couponCodeInput.set('');
-    this.couponError.set(null);
 
     try {
       const response = await fetch(apiUrl, {
@@ -234,25 +157,23 @@ export class Cart implements OnInit {
       });
 
       if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.message || 'Failed to remove item.');
+        await this.throwBackendError(response, 'Failed to remove item');
       }
 
+      // Success: Update UI
       this.cartItems.update(items => {
         const updatedItems = items.filter(i => i.CartItemID !== item.CartItemID);
         this.updateLocalStorage(updatedItems);
         return updatedItems;
       });
-
       console.log('✅ Item removed and localStorage updated');
 
-    } catch (err) {
-      console.error('Error removing item:', err);
-      alert(err instanceof Error ? err.message : 'Could not remove item from cart.');
+    } catch (err: unknown) {
+      this.handleApiError(err, 'Could not remove item from cart.');
     }
   }
 
-  // Apply Coupon Function
+  // --- API: Apply Coupon ---
   async applyCoupon(): Promise<void> {
     const code = this.couponCodeInput().trim().toUpperCase();
     const user = this.currentUser();
@@ -261,7 +182,6 @@ export class Cart implements OnInit {
       this.couponError.set('Please enter a coupon code.');
       return;
     }
-    
     if (!this.cartItems().length) {
       this.couponError.set('Your cart is empty.');
       return;
@@ -277,7 +197,8 @@ export class Cart implements OnInit {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id, couponCode: code })
       });
-      const result = await response.json();
+
+      const result = await response.json(); // Read JSON body once
 
       if (!response.ok) {
         throw new Error(result.message || `Invalid coupon code (${response.status})`);
@@ -285,33 +206,26 @@ export class Cart implements OnInit {
 
       // Success
       this.appliedCoupon.set(result);
-      this.couponCodeInput.set(result.couponCode);
+      this.couponCodeInput.set(result.couponCode); // Set to the corrected-case code
       this.couponError.set(null);
 
-    } catch (error) {
-      console.error('Error applying coupon:', error);
-      this.couponError.set(error instanceof Error ? error.message : 'Could not apply coupon.');
+    } catch (err: unknown) {
+      this.handleApiError(err, 'Could not apply coupon.', true); // Use coupon error signal
       this.appliedCoupon.set(null);
     } finally {
       this.isApplyingCoupon.set(false);
     }
   }
 
-  // Remove Coupon Function
-  removeCoupon(): void {
-    this.appliedCoupon.set(null);
-    this.couponCodeInput.set('');
-    this.couponError.set(null);
-  }
-
+  // --- API: Checkout ---
   async proceedToCheckout(): Promise<void> {
     const user = this.currentUser();
     const applied = this.appliedCoupon();
     
     if (!user || this.cartItems().length === 0) return;
 
-    const apiUrl = `${environment.API_BASE_URL}/checkout`;
     this.isCheckingOut.set(true);
+    this.clearAllFeedback();
 
     const payload = {
       userId: user.id,
@@ -319,37 +233,109 @@ export class Cart implements OnInit {
     };
 
     try {
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`${environment.API_BASE_URL}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const result = await response.json();
+
+      const result = await response.json(); // Read JSON body once
 
       if (!response.ok) {
         throw new Error(result.message || 'Checkout failed.');
       }
 
-      alert(`Checkout successful! Final Price: ${result.finalPrice?.toFixed(2)}, New Balance: ${result.newBalance?.toFixed(2)}`);
+      // --- Checkout Success ---
+      this.successMessage.set(`Checkout successful! Final Price: ${result.finalPrice?.toFixed(2)}, New Balance: ${result.newBalance?.toFixed(2)}`);
       
       // Clear cart, localStorage, and coupon
       this.cartItems.set([]);
       this.updateLocalStorage([]);
-      this.appliedCoupon.set(null);
-      this.couponCodeInput.set('');
-      this.couponError.set(null);
+      this.removeCoupon(); // Clear coupon state
 
-      this.router.navigate(['/profile']);
+      // Redirect after a short delay so user can see success message
+      setTimeout(() => {
+        this.router.navigate(['/profile']);
+      }, 3000); // 3-second delay
 
-    } catch (err) {
-      console.error('Error during checkout:', err);
-      alert(err instanceof Error ? err.message : 'An error occurred during checkout.');
+    } catch (err: unknown) {
+      this.handleApiError(err, 'An error occurred during checkout.');
     } finally {
       this.isCheckingOut.set(false);
     }
   }
 
+  // --- UI Helpers ---
+
+  removeCoupon(): void {
+    this.appliedCoupon.set(null);
+    this.couponCodeInput.set('');
+    this.couponError.set(null);
+  }
+
   continueShopping(): void {
     this.router.navigate(['/main']);
+  }
+
+  // --- Private Utilities ---
+
+  private updateLocalStorage(items: CartItem[]): void {
+    const localCartItems = items.map(item => ({
+      id: item.GameID,
+      name: item.Title,
+      price: item.Price,
+      quantity: item.quantity,
+      imageUrl: item.ImageUrl
+    }));
+    localStorage.setItem(this.CART_STORAGE_KEY, JSON.stringify(localCartItems));
+    
+    // Trigger storage event for other components (like header cart count)
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: this.CART_STORAGE_KEY,
+      newValue: JSON.stringify(localCartItems),
+      url: window.location.href
+    }));
+    console.log('🔄 localStorage updated:', localCartItems);
+  }
+
+  /**
+   * Clears all error and success messages from the UI.
+   */
+  private clearAllFeedback(): void {
+    this.error.set(null);
+    this.couponError.set(null);
+    this.successMessage.set(null);
+    this.appliedCoupon.set(null); // Clear coupon on any cart change
+  }
+
+  /**
+   * Attempts to parse the backend JSON error message from a failed response.
+   */
+  private async throwBackendError(response: Response, defaultMessage: string): Promise<never> {
+    try {
+      const errResult = await response.json();
+      throw new Error(errResult.message || `${defaultMessage}: ${response.statusText}`);
+    } catch (e) {
+      // Fallback if .json() fails or if errResult.message doesn't exist
+      throw new Error(`${defaultMessage}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Centralized error handler to log errors and set the correct UI signal.
+   */
+  private handleApiError(error: unknown, defaultMessage: string, isCouponError: boolean = false): void {
+    console.error('API Error:', error); // Log the raw error
+    
+    let message = defaultMessage;
+    if (error instanceof Error) {
+      message = error.message; // This will catch errors thrown from throwBackendError
+    }
+    
+    if (isCouponError) {
+      this.couponError.set(message);
+    } else {
+      this.error.set(message); // Set the general page error signal
+    }
   }
 }
